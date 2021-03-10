@@ -5,6 +5,13 @@ import control from '../control'
  * Output a <button>Label</button> form element
  */
 export default class controlButton extends control {
+
+  static fieldTypes = () => {
+    const typeAttrs =  ['label', 'subtype', 'style', 'className', 'name', 'value', 'access', 'contingentOnPreviousAnswer']
+    return typeAttrs
+  }
+
+
   /**
    * build a text DOM element, supporting other jquery text form-control's
    * @return {Object} DOM Element to be injected into the form.

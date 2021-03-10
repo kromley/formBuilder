@@ -1,3 +1,4 @@
+//import jQuery from 'jquery'
 import '../sass/form-builder.scss'
 import throttle from 'lodash/throttle'
 import Dom from './dom'
@@ -16,7 +17,7 @@ import {
   trimObj,
   forEach,
   markup,
-  removeFromArray,
+  //removeFromArray,
   attrString,
   capitalize,
   parsedHtml,
@@ -319,6 +320,7 @@ const FormBuilder = function(opts, element, $) {
     return m('div', fieldOptions, { className: 'form-group field-options' }).outerHTML
   }
 
+  /* moved into controls
   const defaultFieldAttrs = type => {
     const defaultAttrs = ['required', 'label', 'description', 'placeholder', 'className', 'name', 'access', 'value']
     const noValFields = ['header', 'paragraph', 'file', 'autocomplete'].concat(d.optionFields)
@@ -375,6 +377,7 @@ const FormBuilder = function(opts, element, $) {
 
     return typeAttrs || defaultAttrs
   }
+  */
 
   /**
    * Build the editable properties for the field
@@ -383,8 +386,10 @@ const FormBuilder = function(opts, element, $) {
    */
   const advFields = values => {
     const { type } = values
+    const controlClass = controls.getClass(type)
+    const fieldAttrs = (controlClass.fieldTypes) ? controlClass.fieldTypes(type) : []
+
     const advFields = []
-    const fieldAttrs = defaultFieldAttrs(type)
     const advFieldMap = {
       required: () => requiredField(values),
       toggle: () => boolAttribute('toggle', values, { first: mi18n.get('toggle') }),
@@ -448,6 +453,18 @@ const FormBuilder = function(opts, element, $) {
           first: ' ',
           second: mi18n.get('requireValidOption'),
         }),
+      contingentOnPreviousAnswer: () => 
+        controlClass.contingentOnPreviousAnswerField(data, values, mi18n),
+      /* 
+      () => {
+        let dataForm = data.formData
+        let dataObj = (dataForm) ? JSON.parse(dataForm) : null
+        return boolAttribute('contingentOnPreviousAnswer', values, {
+          first: mi18n.get('contingentLabel'),
+          second: mi18n.get('contingentOnPreviousAnswer'),
+        })
+      },
+      */
       multiple: () => {
         const typeLabels = {
           default: {

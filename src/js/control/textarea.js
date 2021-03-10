@@ -17,6 +17,12 @@ export default class controlTextarea extends control {
     }
   }
 
+  static fieldTypes = () => {
+    let typeAttrs =  super.fieldTypes()
+    typeAttrs = typeAttrs.concat(['subtype', 'maxlength', 'rows', 'value'])
+    return typeAttrs
+  }
+
   /**
    * build a text DOM element, supporting other jquery text form-control's
    * @return {Object} DOM Element to be injected into the form.

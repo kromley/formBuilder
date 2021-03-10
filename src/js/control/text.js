@@ -1,4 +1,5 @@
 import control from '../control'
+import { removeFromArray } from '../utils'
 
 /**
  * Text input class
@@ -16,6 +17,22 @@ export default class controlText extends control {
         file: 'fileUpload',
       },
     }
+  }
+
+  static fieldTypes = type => {
+    let typeAttrs =  ['required', 'label', 'description', 'placeholder', 'className', 'name', 'access', 'contingentOnPreviousAnswer', 'value']
+    if (type === 'file') {
+      removeFromArray('value', typeAttrs)
+    }
+    else if (type == 'text') {
+      typeAttrs = typeAttrs.concat(['subtype', 'maxlength'])
+    }
+    //else if (type == 'date') {
+    //}
+    else if (type == 'number') {
+      typeAttrs = typeAttrs.concat(['min', 'max', 'step'])
+    }
+    return typeAttrs
   }
 
   /**

@@ -1,5 +1,5 @@
 import control from '../control'
-import { trimObj } from '../utils'
+import { trimObj, removeFromArray } from '../utils'
 
 /**
  * Text input class
@@ -17,6 +17,23 @@ export default class controlSelect extends control {
         minSelectionRequired: 'minSelectionRequired',
       },
     }
+  }
+
+  static fieldTypes = type => {
+    let typeAttrs =  super.fieldTypes()
+
+    if (type === 'checkbox' || type === 'checkbox-group' || type === 'radio-group') {
+      typeAttrs = [ 'required', 'label', 'description', 'toggle', 'inline','className', 'name', 'access', 
+        'contingentOnPreviousAnswer', 'other', 'options', ]
+    }
+    else if (type === 'select') {
+      typeAttrs = typeAttrs.concat(['multiple', 'options'])
+    }
+
+    if (type === 'radio-group') {
+      removeFromArray('toggle', typeAttrs)
+    }
+    return typeAttrs
   }
 
   /**

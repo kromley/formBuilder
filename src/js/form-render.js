@@ -1,3 +1,4 @@
+//import jQuery from 'jquery'
 import mi18n from 'mi18n'
 import utils, { parseXML, forEach } from './utils'
 import { remove } from './dom'

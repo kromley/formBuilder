@@ -5,6 +5,13 @@ import utils from '../utils'
  * Output a <input type="text" ... /> form element
  */
 export default class controlParagraph extends control {
+
+  static fieldTypes = () => {
+    const typeAttrs =  ['label', 'subtype', 'className', 'access', 'contingentOnPreviousAnswer']
+    return typeAttrs
+  }
+
+
   /**
    * build a paragraph DOM element
    * @return {Object} DOM Element to be injected into the form.

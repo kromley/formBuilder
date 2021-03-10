@@ -2,6 +2,8 @@
 import { camelCase, parsedHtml, markup, getStyles, getScripts, isCached } from './utils'
 import mi18n from 'mi18n'
 
+const m = markup
+  
 /**
  * Base class for all control classes
  * Defines the structure of a control class and some standard control methods
@@ -68,7 +70,58 @@ export default class control {
     }
     this.config = config
     this.configure()
+
   }
+
+  static fieldTypes = () => {
+    const typeAttrs =  ['required', 'label', 'description', 'placeholder', 'className', 'name', 'access', 'contingentOnPreviousAnswer']
+    return typeAttrs
+  }
+
+  static contingentOnPreviousAnswerField = (data, values, mi18n) => {
+    //const dataForm = data.formData
+    //const dataObj = (dataForm) ? JSON.parse(dataForm) : null
+    return this.boolAttribute(data, 'contingentOnPreviousAnswer', values, {
+      first: mi18n.get('contingentLabel'),
+      second: mi18n.get('contingentOnPreviousAnswer'),
+    })
+  }
+
+  static boolAttribute = (data, name, values, labels = {}) => {
+    const label = txt =>
+      m('label', txt, {
+        for: `${name}-${data.lastID}`,
+      }).outerHTML
+    const cbAttrs = {
+      type: 'checkbox',
+      className: `fld-${name}`,
+      name,
+      id: `${name}-${data.lastID}`,
+    }
+    if (values[name]) {
+      cbAttrs.checked = true
+    }
+    const left = []
+    let right = [m('input', null, cbAttrs).outerHTML]
+
+    if (labels.first) {
+      left.push(label(labels.first))
+    }
+
+    if (labels.second) {
+      right.push(' ', label(labels.second))
+    }
+    if (labels.content) {
+      right.push(labels.content)
+    }
+
+    right = m('div', right, { className: 'input-wrap' }).outerHTML
+
+    return m('div', left.concat(right), {
+      className: `form-group ${name}-wrap`,
+    }).outerHTML
+  }
+
 
   /**
    * Getter to retrieve class configuration.

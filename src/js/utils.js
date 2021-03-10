@@ -411,6 +411,14 @@ export const removeFromArray = (val, arr) => {
   }
 }
 
+export const isEmpty = obj => {
+  for (var key in obj) {
+    if (obj.hasOwnProperty(key))
+      return false
+  }
+  return true
+}
+
 /**
  * Loads an array of scripts using jQuery's `getScript`
  * @param  {Array|String}  scriptScr    scripts

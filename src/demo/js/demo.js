@@ -1,6 +1,8 @@
 import '../sass/demo.scss'
 import { insertStyle, removeStyle } from '../../js/utils'
 import { demoActions, generateActionTable, setCurrentFieldIdValues } from './actionButtons'
+import bcText from '../../js/control_plugins/bcText'
+import starRating from '../../js/control_plugins/starRating'
 
 const localeSessionKey = 'formBuilder-locale'
 const defaultLocale = 'en-US'
@@ -49,6 +51,7 @@ jQuery(function($) {
         { label: 'Ruby' },
       ],
     },
+    /*
     {
       label: 'Star Rating',
       attrs: {
@@ -56,6 +59,16 @@ jQuery(function($) {
       },
       icon: '🌟',
     },
+    */
+    /*
+    {
+      label: 'Conditional Text',
+      attrs: {
+        type: 'bcText',
+      },
+      icon: '🔤',
+    },
+    */    
   ]
 
   const replaceFields = [
@@ -85,6 +98,7 @@ jQuery(function($) {
   ]
 
   const templates = {
+    /*
     starRating: function(fieldData) {
       return {
         field: '<span id="' + fieldData.name + '">',
@@ -93,6 +107,26 @@ jQuery(function($) {
         },
       }
     },
+    */
+        /*
+    bcText: function(fieldData) {
+      return {
+        field: '<span id="' + fieldData.name + '">',
+        build: () => {
+          let { name } = this.config
+          name = this.config.multiple ? `${name}[]` : name
+          const inputConfig = Object.assign({}, this.config, { name })
+          this.dom = this.markup('input', null, inputConfig)
+          return this.dom
+        },
+        onRender: () => {
+          if (this.config.userData) {
+            $(this.dom).val(this.config.userData[0])
+          }
+        },
+      }
+    },
+        */
   }
 
   const inputSets = [
@@ -163,6 +197,16 @@ jQuery(function($) {
   }
 
   const typeUserAttrs = {
+    /*
+    bcText: {
+      isConditional: {
+        label: 'Is Conditional',
+        help: 'Make field dependent on previous answer',
+        type: 'checkbox',
+        value: false,
+      }
+    },
+    */
     text: {
       shape: {
         label: 'Class',
@@ -172,7 +216,7 @@ jQuery(function($) {
           'green form-control': 'Green',
           'blue form-control': 'Blue',
         },
-        style: 'border: 1px solid red',
+        //style: 'border: 1px solid red',
       },
       readonly: {
         label: 'readonly',
@@ -224,6 +268,7 @@ jQuery(function($) {
       enable: true,
     },
     sortableControls: true,
+    customFields: ['bcText'],
     fields: fields,
     templates: templates,
     inputSets: inputSets,

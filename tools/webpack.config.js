@@ -137,7 +137,7 @@ const webpackConfig = {
       minRatio: 0.8,
     }),
   ],
-  devtool,
+  devtool: PRODUCTION ? null : 'inline-source-map',
   resolve: {
     modules: [resolve(__dirname, 'src'), 'node_modules'],
     extensions: ['.js', '.scss'],

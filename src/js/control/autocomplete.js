@@ -17,6 +17,11 @@ export default class controlAutocomplete extends control {
     }
   }
 
+  static fieldTypes = () => {
+    let typeAttrs =  super.fieldTypes()
+    typeAttrs = typeAttrs.concat(['options', 'requireValidOption'])
+    return typeAttrs
+  }
   /**
    * build a text DOM element, supporting other jquery text form-control's
    * @return {Object} DOM Element to be injected into the form.

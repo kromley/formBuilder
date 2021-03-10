@@ -5,6 +5,13 @@ import control from '../control'
  * Output a <input type="hidden" ... /> form element
  */
 export default class controlHidden extends control {
+
+  static fieldTypes = () => {
+    const typeAttrs =  ['name', 'value']
+    return typeAttrs
+  }
+
+
   /**
    * build a hidden input dom element
    * @return {Object} DOM Element to be injected into the form.

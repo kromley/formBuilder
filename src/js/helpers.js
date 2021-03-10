@@ -358,7 +358,8 @@ export default class Helpers {
 
     const fieldType = $field.attr('type')
     const $prevHolder = $('.prev-holder', field)
-    let previewData = Object.assign({}, _this.getAttrVals(field, previewData), { type: fieldType })
+//    let previewData = Object.assign({}, _this.getAttrVals(field, previewData), { type: fieldType })
+    let previewData = Object.assign({}, _this.getAttrVals(field), { type: fieldType })
 
     if (fieldType.match(d.optionFieldsRegEx)) {
       previewData.values = []
