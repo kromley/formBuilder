@@ -32,6 +32,7 @@ const toggleBootStrap = ({ target }) => {
 }
 
 document.getElementById('toggleBootstrap').addEventListener('click', toggleBootStrap, false)
+$('#toggleBootstrap').trigger('click') //default to use bootstrap
 
 jQuery(function($) {
   const fields = [

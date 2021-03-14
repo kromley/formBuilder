@@ -199,6 +199,7 @@ export default class Helpers {
 
         if (!$field.hasClass('disabled-field')) {
           let fieldData = _this.getTypes($field)
+          fieldData.uid = $field.attr('uid')
           const $roleInputs = $('.roles-field:checked', field)
           const roleVals = $roleInputs.map(index => $roleInputs[index].value).get()
 
@@ -324,6 +325,7 @@ export default class Helpers {
    */
   getAttrVals(field) {
     const fieldData = Object.create(null)
+    fieldData.id = field.id
     const attrs = field.querySelectorAll('[class*="fld-"]')
     forEach(attrs, index => {
       const attr = attrs[index]

@@ -35,6 +35,16 @@ export default class controlText extends control {
     return typeAttrs
   }
 
+  static getLabelsForMultipleAttribute = (type, mi18n) => {
+    if (type === 'file') {
+      return {
+        first: mi18n.get('multipleFiles'),
+        second: mi18n.get('allowMultipleFiles'),
+      }
+    }
+    return null
+  }
+
   /**
    * build a text DOM element, supporting other jquery text form-control's
    * @return {Object} DOM Element to be injected into the form.

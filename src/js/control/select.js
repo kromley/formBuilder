@@ -36,6 +36,15 @@ export default class controlSelect extends control {
     return typeAttrs
   }
 
+  static getLabelsForMultipleAttribute = (type, mi18n) => {
+    if (type === 'select') {
+      return {
+        first: ' ',
+        second: mi18n.get('selectionsMessage'),
+      }
+    }
+    return null
+  }
   /**
    * build a select DOM element, supporting other jquery text form-control's
    * @return {Object} DOM Element to be injected into the form.

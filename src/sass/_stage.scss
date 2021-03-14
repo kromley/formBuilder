@@ -478,6 +478,22 @@
       margin: 0 3px;
       float: none;
     }
+
+    .condition-tbody {
+      background-color: $off-white;
+    }
+
+    .contigent-condition-col {
+      width: 42%;
+      margin: 0 3px;
+      float: none;
+    }
+
+    .contigent-condition-col-last {
+      width: 12%;
+      margin: 0 3px;
+      float: none;
+    }
   }
 
   .form-field {
@@ -641,7 +657,8 @@
       }
     }
 
-    .available-roles {
+    .available-roles,
+    .available-condition-selectors {
       display: none;
       padding: 10px;
       margin: 10px 0;

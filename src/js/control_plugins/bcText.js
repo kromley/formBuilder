@@ -1,5 +1,8 @@
 
 import controlText from '../control/text'
+import {
+  removeFromArray,
+} from '../utils'
 
 // configure the class for runtime loading
 if (!window.fbControls) window.fbControls = []
@@ -23,9 +26,10 @@ window.fbControls.push(function(controlClass) {
     }
 
     static fieldTypes = () => { /*type included just to match signature of parent (control.js) */
-      return super.fieldTypes('text')
+      const typeAttrs = super.fieldTypes('text')
+      removeFromArray('subtype', typeAttrs)
+      return typeAttrs
     }
-
 
     /**
      * javascript & css to load

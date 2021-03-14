@@ -1,5 +1,6 @@
 // CONTROL.JS
-import { camelCase, parsedHtml, markup, getStyles, getScripts, isCached } from './utils'
+import { camelCase, parsedHtml, markup, getStyles, getScripts, isCached, addEventListeners } from './utils'
+import events from './events'
 import mi18n from 'mi18n'
 
 const m = markup
@@ -72,19 +73,148 @@ export default class control {
     this.configure()
 
   }
+  static instanceData = field => {
+    //const nameHeaderLength = field.type.length + 1
+    //const id = field.name.substring(nameHeaderLength)
+    return {
+      name: field.name,
+      type: field.type, 
+      label: field.label
+    }
+  }
 
   static fieldTypes = () => {
     const typeAttrs =  ['required', 'label', 'description', 'placeholder', 'className', 'name', 'access', 'contingentOnPreviousAnswer']
     return typeAttrs
   }
 
-  static contingentOnPreviousAnswerField = (data, values, mi18n) => {
-    //const dataForm = data.formData
-    //const dataObj = (dataForm) ? JSON.parse(dataForm) : null
-    return this.boolAttribute(data, 'contingentOnPreviousAnswer', values, {
+  static contingentOnPreviousAnswerField = ($stage, data, values, mi18n) => {
+    const dataForm = data.formData
+    let fields = dataForm 
+    if (!Array.isArray(fields)) {
+      fields = (dataForm) ? JSON.parse(dataForm) : []
+    }
+
+    const selectors = []
+    for (let i = 0; i < fields.length; i++) {
+      const field = fields[i]
+      if (field.type == 'select' || field.type == 'radio-group' || field.type == 'checkbox-group') {
+        selectors.push(field)
+      }
+    }
+
+    if (selectors.length == 0)
+      return ''
+
+    const labelField = mi18n.get('conditionFieldLabel')
+    const labelValue = mi18n.get('conditionValueLabel')
+    const labelConditionOperator = mi18n.get('conditionOperatorAnd')
+
+    const pastSelectorDisplay = values.contingentOnPreviousAnswer ? 'style="display:block"' : ''
+    const availablePastSelector = [`<div class="available-condition-selectors" ${pastSelectorDisplay}>`]
+    availablePastSelector.push('<div class="sortable-options-wrap" style="width:98%">')
+    availablePastSelector.push('<table class="sortable-options ui-sortable"><thead class="condition-thead">')
+
+    //header
+    availablePastSelector.push('<tr class="ui-sortable-handle">')
+    availablePastSelector.push(`<th class="contigent-condition-col field-label">${labelField}</th>`)
+    availablePastSelector.push(`<th class="contigent-condition-col field-label">${labelValue}</th>`)
+    availablePastSelector.push('<th class="contigent-condition-col-last field-label">&nbsp;</th>')
+    availablePastSelector.push('</tr></thead><tbody class="condition-tbody">')
+
+    //conditions
+    availablePastSelector.push('<tr class="ui-sortable-handle">')
+    availablePastSelector.push('<td class="contigent-condition-col option-label">')
+    availablePastSelector.push(`<select name="${labelField}" id="pet-select">`)
+    /*
+    <option value="">--Please choose an option--</option>
+    <option value="dog">Dog</option>
+</select>`)
+*/
+    for (const index in selectors) {
+      const select = selectors[index]
+      availablePastSelector.push(`<option value="${select.name}" name="option-${select.id}">${select.label}</option>`)
+    }
+    availablePastSelector.push('</select>')
+    availablePastSelector.push('</td>')
+    
+
+    availablePastSelector.push(`<td class="contigent-condition-col option-label">${labelValue}</td>`)
+    availablePastSelector.push(`<td class="contigent-condition-col-last option-label">
+      <a class="joinOperator add-opt">${labelConditionOperator}</a></td>`)
+    availablePastSelector.push('</tr>')
+
+    if (!$stage.fieldLevelChange) {
+      addEventListeners(document, events.fieldLabelChanged.type, e => {
+        const fieldChanged = e.field
+        const fieldLabel = e.fldLabel
+        const selector = 'option[name=\'option-'+fieldChanged.id+'\']'
+        const optionHtml = $(selector)
+        if (optionHtml) {
+          const newVal = fieldLabel.innerHTML
+          const options = $(selector).toArray()
+          for (const index in options) {
+            const option = options[index]
+            option.innerHTML = newVal
+          }
+
+          //forEach(optionHtml, index => {
+          //  optionHtml[index].innerHTML = newVal
+          //})
+        }
+      })
+    }
+    /*
+      for (field in selectors) {
+        if (opts.roles.hasOwnProperty(key)) {
+          const roleId = `fld-${data.lastID}-roles-${key}`
+          const cbAttrs = {
+            type: 'checkbox',
+            name: 'roles[]',
+            value: key,
+            id: roleId,
+            className: 'roles-field',
+          }
+          if (roles.includes(key)) {
+            cbAttrs.checked = 'checked'
+          }
+
+          availableRoles.push(h.input(cbAttrs).outerHTML)
+          availableRoles.push(` ${opts.roles[key]}</label>`)
+        }
+      }
+      */
+    
+    //availablePastSelector.push('Hello World')
+    //availablePastSelector.push('</div>')
+
+    availablePastSelector.push('</tbody></table>')
+    availablePastSelector.push('<div class="option-actions">')
+    availablePastSelector.push(`<a class="add add-opt">${mi18n.get('addCondition')}</a>`)
+    availablePastSelector.push('</div>')
+    availablePastSelector.push('</div>')
+
+    const displayInDom = this.boolAttribute(data, 'contingentOnPreviousAnswer', values, {
       first: mi18n.get('contingentLabel'),
       second: mi18n.get('contingentOnPreviousAnswer'),
+      content: availablePastSelector.join('')
     })
+
+    //add processing
+    if (!('contingentHandling' in $stage)) {
+      $stage.contingentHandling = true
+      $stage.on('click', 'input.fld-contingentOnPreviousAnswer', function(e) {
+        const selectorsInDom = $(e.target).closest('.form-field').find('.available-condition-selectors')
+        const enableConditionalInclude= $(e.target)
+        selectorsInDom.slideToggle(250, function() {
+          if (!enableConditionalInclude.is(':checked')) {
+            $('input[type=checkbox]', selectorsInDom).removeAttr('checked')
+          }
+        })
+      })
+    }
+
+    return displayInDom
   }
 
   static boolAttribute = (data, name, values, labels = {}) => {

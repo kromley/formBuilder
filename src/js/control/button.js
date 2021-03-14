@@ -7,7 +7,7 @@ import control from '../control'
 export default class controlButton extends control {
 
   static fieldTypes = () => {
-    const typeAttrs =  ['label', 'subtype', 'style', 'className', 'name', 'value', 'access', 'contingentOnPreviousAnswer']
+    const typeAttrs =  ['label', 'subtype', 'buttonStyle', 'className', 'name', 'value', ]
     return typeAttrs
   }
 

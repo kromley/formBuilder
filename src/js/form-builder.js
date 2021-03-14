@@ -8,8 +8,14 @@ import mi18n from 'mi18n'
 import events from './events'
 import layout from './layout'
 import Helpers from './helpers'
-import { defaultOptions, defaultI18n, config, styles } from './config'
+import { defaultOptions, defaultI18n, config } from './config'
 import Controls from './controls'
+import booleanAttribute from './control/controlAttributes/boolAttribute'
+import { inlineBoolean, requiredBoolean, toggleBoolean, requireValidOptionBoolean, otherBoolean, multipleBoolean } from './control/controlAttributes/boolAttributeTypes'
+import { labelText, nameText, classNameText, placeholderText, descriptionText, valueText } from './control/controlAttributes/textAttributeTypes'
+import selectSubtype from './control/controlAttributes/selectSubtype'
+import buttonStyleAttribute from './control/controlAttributes/buttonStyleAttribute'
+import numberAttribute from './control/controlAttributes/numberAttribute'
 import {
   subtract,
   hyphenCase,
@@ -19,7 +25,7 @@ import {
   markup,
   //removeFromArray,
   attrString,
-  capitalize,
+  //capitalize,
   parsedHtml,
   addEventListeners,
   closest,
@@ -28,6 +34,7 @@ import {
   getContentType
 } from './utils'
 import { css_prefix_text } from '../fonts/config.json'
+import accessAttribute from './control/controlAttributes/accessAttribute'
 
 const DEFAULT_TIMEOUT = 333
 
@@ -53,7 +60,8 @@ const FormBuilder = function(opts, element, $) {
   data.lastID = `${data.formID}-fld-0`
   const controls = new Controls(opts, d)
 
-  const subtypes = (config.subtypes = h.processSubtypes(opts.subtypes))
+//  const subtypes = (config.subtypes = h.processSubtypes(opts.subtypes))
+  config.subtypes = h.processSubtypes(opts.subtypes)
 
   const $stage = $(d.stage)
   const $cbUL = $(d.controls)
@@ -232,6 +240,10 @@ const FormBuilder = function(opts, element, $) {
     }
 
     if (isNew) {
+      //const formID = data.lastID.match(/frmb-\d{13}/)[0]
+      //const instData = 
+      data.registerFormControl(controls, field)
+      //field.uid = instData.id
       const eventTimeout = setTimeout(() => {
         document.dispatchEvent(events.fieldAdded)
         clearTimeout(eventTimeout)
@@ -388,108 +400,34 @@ const FormBuilder = function(opts, element, $) {
     const { type } = values
     const controlClass = controls.getClass(type)
     const fieldAttrs = (controlClass.fieldTypes) ? controlClass.fieldTypes(type) : []
+    const context = { data: data, mi18n: mi18n, stage: $stage, opts: opts, controlClass: controlClass }
 
     const advFields = []
     const advFieldMap = {
-      required: () => requiredField(values),
-      toggle: () => boolAttribute('toggle', values, { first: mi18n.get('toggle') }),
-      inline: () => {
-        const labels = {
-          first: mi18n.get('inline'),
-          second: mi18n.get('inlineDesc', type.replace('-group', '')),
-        }
-
-        return boolAttribute('inline', values, labels)
-      },
-      label: () => textAttribute('label', values),
-      description: () => textAttribute('description', values),
-      subtype: () => selectAttribute('subtype', values, subtypes[type]),
-      style: () => btnStyles(values.style),
-      placeholder: () => textAttribute('placeholder', values),
-      rows: () => numberAttribute('rows', values),
-      className: isHidden => textAttribute('className', values, isHidden),
-      name: isHidden => textAttribute('name', values, isHidden),
-      value: () => textAttribute('value', values),
-      maxlength: () => numberAttribute('maxlength', values),
-      access: () => {
-        const rolesDisplay = values.role ? 'style="display:block"' : ''
-        const availableRoles = [`<div class="available-roles" ${rolesDisplay}>`]
-        for (key in opts.roles) {
-          if (opts.roles.hasOwnProperty(key)) {
-            const roleId = `fld-${data.lastID}-roles-${key}`
-            const cbAttrs = {
-              type: 'checkbox',
-              name: 'roles[]',
-              value: key,
-              id: roleId,
-              className: 'roles-field',
-            }
-            if (roles.includes(key)) {
-              cbAttrs.checked = 'checked'
-            }
-
-            availableRoles.push(`<label for="${roleId}">`)
-            availableRoles.push(h.input(cbAttrs).outerHTML)
-            availableRoles.push(` ${opts.roles[key]}</label>`)
-          }
-        }
-        availableRoles.push('</div>')
-        const accessLabels = {
-          first: mi18n.get('roles'),
-          second: mi18n.get('limitRole'),
-          content: availableRoles.join(''),
-        }
-
-        return boolAttribute('access', values, accessLabels)
-      },
-      other: () =>
-        boolAttribute('other', values, {
-          first: mi18n.get('enableOther'),
-          second: mi18n.get('enableOtherMsg'),
-        }),
+      required: () => new requiredBoolean(context, values).getDomDisplay(), 
+      toggle: () => new toggleBoolean(context, values).getDomDisplay(), 
+      inline: () => new inlineBoolean(context, values).getDomDisplay(),
+      label: () => new labelText(context, values).getDomDisplay(), 
+      description: () => new descriptionText(context, values).getDomDisplay(), 
+      subtype: () => new selectSubtype(context, values).getDomDisplay(), 
+      buttonStyle: () => new buttonStyleAttribute(context, values).getDomDisplay(), 
+      placeholder: () => new placeholderText(context, values).getDomDisplay(), 
+      rows: () => new numberAttribute(context, values).getDomDisplay(), 
+      className: isHidden => new classNameText(context, values).getDomDisplay(isHidden), 
+      name: isHidden => new nameText(context, values).getDomDisplay(isHidden), 
+      value: () => new valueText(context, values).getDomDisplay(), 
+      maxlength: () => new numberAttribute(context, values).getDomDisplay(),
+      mim: () => new numberAttribute(context, values).getDomDisplay(),
+      max: () => new numberAttribute(context, values).getDomDisplay(),
+      step: () => new numberAttribute(context, values).getDomDisplay(),
+      access: () => new accessAttribute(context, values).getDomDisplay(),
+      other: () => new otherBoolean(context, values).getDomDisplay(), 
       options: () => fieldOptions(values),
-      requireValidOption: () =>
-        boolAttribute('requireValidOption', values, {
-          first: ' ',
-          second: mi18n.get('requireValidOption'),
-        }),
+      requireValidOption: () => new requireValidOptionBoolean(context, values).getDomDisplay(),
       contingentOnPreviousAnswer: () => 
-        controlClass.contingentOnPreviousAnswerField(data, values, mi18n),
-      /* 
-      () => {
-        let dataForm = data.formData
-        let dataObj = (dataForm) ? JSON.parse(dataForm) : null
-        return boolAttribute('contingentOnPreviousAnswer', values, {
-          first: mi18n.get('contingentLabel'),
-          second: mi18n.get('contingentOnPreviousAnswer'),
-        })
-      },
-      */
-      multiple: () => {
-        const typeLabels = {
-          default: {
-            first: 'Multiple',
-            second: 'set multiple attribute',
-          },
-          file: {
-            first: mi18n.get('multipleFiles'),
-            second: mi18n.get('allowMultipleFiles'),
-          },
-          select: {
-            first: ' ',
-            second: mi18n.get('selectionsMessage'),
-          },
-        }
-        return boolAttribute('multiple', values, typeLabels[type] || typeLabels.default)
-      },
+        controlClass.contingentOnPreviousAnswerField($stage, data, values, mi18n),
+      multiple: () => new multipleBoolean(context, values).getDomDisplay(), 
     }
-    let key
-    const roles = values.role !== undefined ? values.role.split(',') : []
-    const numAttrs = ['min', 'max', 'step']
-
-    numAttrs.forEach(numAttr => {
-      advFieldMap[numAttr] = () => numberAttribute(numAttr, values)
-    })
 
     const noDisable = ['name', 'className']
 
@@ -552,7 +490,14 @@ const FormBuilder = function(opts, element, $) {
     const attrTypeMap = {
       array: selectUserAttrs,
       string: inputUserAttrs,
-      number: numberAttribute,
+      number: (attr, attrData) => {
+        //numberAttribute,
+        const values = {...attrData }
+        values.type = attr
+        const context = { data: data, mi18n: mi18n, stage: $stage, opts: opts, controlClass: null }
+        const attributeClass = new numberAttribute(context, values)
+        return attributeClass.getDomDisplay()
+      },
       boolean: (attr, attrData) => {
         let isChecked = false
         if (attr.type === 'checkbox') {
@@ -562,7 +507,10 @@ const FormBuilder = function(opts, element, $) {
         } else if (attrData.hasOwnProperty('value') || attrData.hasOwnProperty('checked')) {
           isChecked = attrData.value || attrData.checked || false
         }
-        return boolAttribute(attr, { ...attrData, [attr]: isChecked }, { first: attrData.label })
+        const context = { data: data, mi18n: mi18n, stage: $stage, opts: opts, controlClass: null }
+        const attributeClass = new booleanAttribute(context, attr, { ...attrData, [attr]: isChecked })
+        return attributeClass.getDomDisplayBase({ first: attrData.label }, false)
+        //return boolAttribute(attr, { ...attrData, [attr]: isChecked }, { first: attrData.label })
       },
     }
 
@@ -660,229 +608,10 @@ const FormBuilder = function(opts, element, $) {
     return `<div class="form-group ${name}-wrap">${label}${inputWrap}</div>`
   }
 
-  const boolAttribute = (name, values, labels = {}) => {
-    const label = txt =>
-      m('label', txt, {
-        for: `${name}-${data.lastID}`,
-      }).outerHTML
-    const cbAttrs = {
-      type: 'checkbox',
-      className: `fld-${name}`,
-      name,
-      id: `${name}-${data.lastID}`,
-    }
-    if (values[name]) {
-      cbAttrs.checked = true
-    }
-    const left = []
-    let right = [m('input', null, cbAttrs).outerHTML]
-
-    if (labels.first) {
-      left.push(label(labels.first))
-    }
-
-    if (labels.second) {
-      right.push(' ', label(labels.second))
-    }
-    if (labels.content) {
-      right.push(labels.content)
-    }
-
-    right = m('div', right, { className: 'input-wrap' }).outerHTML
-
-    return m('div', left.concat(right), {
-      className: `form-group ${name}-wrap`,
-    }).outerHTML
-  }
-
-  const btnStyles = style => {
-    let styleField = ''
-
-    // corrects issue where 'undefined' was saved to formData
-    if (style === 'undefined') {
-      style = 'default'
-    }
-
-    const styleLabel = `<label>${i18n.style}</label>`
-    styleField += h.input({
-      value: style || 'default',
-      type: 'hidden',
-      className: 'btn-style',
-    }).outerHTML
-    styleField += '<div class="btn-group" role="group">'
-
-    styles.btn.forEach(btnStyle => {
-      const classList = ['btn-xs', 'btn', `btn-${btnStyle}`]
-      if (style === btnStyle) {
-        classList.push('selected')
-      }
-      const btn = m('button', mi18n.get(`styles.btn.${btnStyle}`), {
-        value: btnStyle,
-        type: 'button',
-        className: classList.join(' '),
-      }).outerHTML
-
-      styleField += btn
-    })
-
-    styleField += '</div>'
-
-    styleField = m('div', [styleLabel, styleField], {
-      className: 'form-group style-wrap',
-    })
-
-    return styleField.outerHTML
-  }
-
-  /**
-   * Add a number attribute to a field.
-   * @param  {String} attribute
-   * @param  {Object} values
-   * @return {String} markup for number attribute
-   */
-  const numberAttribute = (attribute, values) => {
-    const { class: classname, className, value, ...attrs } = values
-    const attrVal = attrs[attribute] || value
-    const attrLabel = mi18n.get(attribute) || attribute
-    const placeholder = mi18n.get(`placeholder.${attribute}`)
-
-    const inputConfig = {
-      type: 'number',
-      value: attrVal,
-      name: attribute,
-      placeholder,
-      className: `fld-${attribute} form-control ${classname || className || ''}`.trim(),
-      id: `${attribute}-${data.lastID}`,
-    }
-    const numberAttribute = h.input(trimObj(inputConfig)).outerHTML
-    const inputWrap = `<div class="input-wrap">${numberAttribute}</div>`
-    const inputLabel = `<label for="${inputConfig.id}">${attrLabel}</label>`
-
-    return m('div', [inputLabel, inputWrap], {
-      className: `form-group ${attribute}-wrap`,
-    }).outerHTML
-  }
-
-  /**
-   * selectAttribute
-   * @param  {String} attribute  attribute name
-   * @param  {Object} values     aka attrs
-   * @param  {Array} optionData  select field option data
-   * @return {String}            select input makrup
-   */
-  const selectAttribute = (attribute, values, optionData) => {
-    const selectOptions = optionData.map((option, i) => {
-      let optionAttrs = Object.assign(
-        {
-          label: `${i18n.option} ${i}`,
-          value: undefined,
-        },
-        option,
-      )
-      if (option.value === values[attribute]) {
-        optionAttrs.selected = true
-      }
-      optionAttrs = trimObj(optionAttrs)
-      return m('option', optionAttrs.label, optionAttrs)
-    })
-    const selectAttrs = {
-      id: attribute + '-' + data.lastID,
-      name: attribute,
-      className: `fld-${attribute} form-control`,
-    }
-    const labelText = mi18n.get(attribute) || capitalize(attribute) || ''
-    const label = m('label', labelText, { for: selectAttrs.id })
-    const select = m('select', selectOptions, selectAttrs)
-    const inputWrap = m('div', select, { className: 'input-wrap' })
-    const attrWrap = m('div', [label, inputWrap], {
-      className: `form-group ${selectAttrs.name}-wrap`,
-    })
-
-    return attrWrap.outerHTML
-  }
-
-  /**
-   * Generate some text inputs for field attributes, **will be replaced**
-   * @param  {String} attribute
-   * @param  {Object} values
-   * @param  {Boolean} isHidden
-   * @return {String}
-   */
-  const textAttribute = (attribute, values, isHidden = false) => {
-    const textArea = ['paragraph']
-
-    let attrVal = values[attribute] || ''
-    let attrLabel = mi18n.get(attribute)
-
-    if (attribute === 'label') {
-      if (textArea.includes(values.type)) {
-        attrLabel = mi18n.get('content')
-      } else {
-        attrVal = parsedHtml(attrVal)
-      }
-    }
-
-    const placeholder = mi18n.get(`placeholders.${attribute}`) || ''
-    let attributefield = ''
-    const noMakeAttr = []
-
-    if (!noMakeAttr.some(elem => elem === true)) {
-      const inputConfig = {
-        name: attribute,
-        placeholder,
-        className: `fld-${attribute} form-control`,
-        id: `${attribute}-${data.lastID}`,
-      }
-      const attributeLabel = m('label', attrLabel, {
-        for: inputConfig.id,
-      }).outerHTML
-
-      if (attribute === 'label' && !opts.disableHTMLLabels) {
-        inputConfig.contenteditable = true
-        attributefield += m('div', attrVal, inputConfig).outerHTML
-      } else {
-        inputConfig.value = attrVal
-        inputConfig.type = 'text'
-        attributefield += `<input ${attrString(inputConfig)}>`
-      }
-
-      const inputWrap = `<div class="input-wrap">${attributefield}</div>`
-
-      let visibility = isHidden ? 'none' : 'block'
-      if (attribute === 'value') {
-        visibility = values.subtype && values.subtype === 'quill' && 'none'
-      }
-
-      attributefield = m('div', [attributeLabel, inputWrap], {
-        className: `form-group ${attribute}-wrap`,
-        style: `display: ${visibility}`,
-      })
-    }
-
-    return attributefield.outerHTML
-  }
-
-  const requiredField = fieldData => {
-    const { type } = fieldData
-    const noRequire = ['header', 'paragraph', 'button']
-    const noMake = []
-    let requireField = ''
-
-    if (noRequire.includes(type)) {
-      noMake.push(true)
-    }
-    if (!noMake.some(elem => elem === true)) {
-      requireField = boolAttribute('required', fieldData, {
-        first: mi18n.get('required'),
-      })
-    }
-
-    return requireField
-  }
-
   // Append the new field to the editor
   const appendNewField = function(values, isNew = true) {
     data.lastID = h.incrementId(data.lastID)
+    //if (isNew) values.uid = data.lastID
 
     const type = values.type || 'text'
     let label = values.label || (isNew ? i18n.get(type) || mi18n.get('label') : '')
@@ -920,6 +649,7 @@ const FormBuilder = function(opts, element, $) {
     liContents.push(
       m('label', parsedHtml(label), {
         className: 'field-label',
+        id: `id-${data.lastID}-field-label`
       }),
     )
 
@@ -957,6 +687,7 @@ const FormBuilder = function(opts, element, $) {
       class: `${type}-field form-field`,
       type: type,
       id: data.lastID,
+      //uid: values.uid
     })
     const $li = $(field)
 
@@ -1186,8 +917,12 @@ const FormBuilder = function(opts, element, $) {
   addEventListeners(d.stage, 'keyup change', ({ target }) => {
     if (!target.classList.contains('fld-label')) return
     const value = target.value || target.innerHTML
-    const label = closest(target, '.form-field').querySelector('.field-label')
+    const field =closest(target, '.form-field')
+    const label = field.querySelector('.field-label')
     label.innerHTML = parsedHtml(value)
+    events.fieldLabelChanged.field = field
+    events.fieldLabelChanged.fldLabel = label
+    document.dispatchEvent(events.fieldLabelChanged)
   })
 
   // remove error styling when users tries to correct mistake
