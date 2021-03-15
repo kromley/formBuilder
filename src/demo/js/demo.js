@@ -52,26 +52,9 @@ jQuery(function($) {
         { label: 'Ruby' },
       ],
     },
-    /*
-    {
-      label: 'Star Rating',
-      attrs: {
-        type: 'starRating',
-      },
-      icon: '🌟',
-    },
-    */
-    /*
-    {
-      label: 'Conditional Text',
-      attrs: {
-        type: 'bcText',
-      },
-      icon: '🔤',
-    },
-    */    
   ]
 
+  /*
   const replaceFields = [
     {
       type: 'textarea',
@@ -81,6 +64,7 @@ jQuery(function($) {
       required: true,
     },
   ]
+  */
 
   const actionButtons = [
     {
@@ -198,16 +182,6 @@ jQuery(function($) {
   }
 
   const typeUserAttrs = {
-    /*
-    bcText: {
-      isConditional: {
-        label: 'Is Conditional',
-        help: 'Make field dependent on previous answer',
-        type: 'checkbox',
-        value: false,
-      }
-    },
-    */
     text: {
       shape: {
         label: 'Class',
@@ -220,6 +194,7 @@ jQuery(function($) {
         //style: 'border: 1px solid red',
       },
       readonly: {
+        type: 'checkbox',
         label: 'readonly',
         value: false,
       },
@@ -278,7 +253,7 @@ jQuery(function($) {
     disableInjectedStyle: false,
     actionButtons: actionButtons,
     disableFields: ['autocomplete', 'custom-tinymce'],
-    replaceFields: replaceFields,
+  //  replaceFields: replaceFields,
     disabledFieldButtons: {
       text: ['copy'],
     },

@@ -1,4 +1,3 @@
-//import jQuery from 'jquery'
 import '../sass/form-builder.scss'
 import throttle from 'lodash/throttle'
 import Dom from './dom'
@@ -10,11 +9,7 @@ import layout from './layout'
 import Helpers from './helpers'
 import { defaultOptions, defaultI18n, config } from './config'
 import Controls from './controls'
-import booleanAttribute from './control/controlAttributes/boolAttribute'
-import { inlineBoolean, requiredBoolean, toggleBoolean, requireValidOptionBoolean, otherBoolean, multipleBoolean } from './control/controlAttributes/boolAttributeTypes'
-import { labelText, nameText, classNameText, placeholderText, descriptionText, valueText } from './control/controlAttributes/textAttributeTypes'
-import selectSubtype from './control/controlAttributes/selectSubtype'
-import buttonStyleAttribute from './control/controlAttributes/buttonStyleAttribute'
+import boolAttribute from './control/controlAttributes/boolAttribute'
 import numberAttribute from './control/controlAttributes/numberAttribute'
 import {
   subtract,
@@ -23,18 +18,15 @@ import {
   trimObj,
   forEach,
   markup,
-  //removeFromArray,
   attrString,
-  //capitalize,
   parsedHtml,
   addEventListeners,
   closest,
   safename,
   forceNumber,
-  getContentType
 } from './utils'
 import { css_prefix_text } from '../fonts/config.json'
-import accessAttribute from './control/controlAttributes/accessAttribute'
+import optionsAttribute from './control/controlAttributes/optionsAttribute'
 
 const DEFAULT_TIMEOUT = 333
 
@@ -60,7 +52,6 @@ const FormBuilder = function(opts, element, $) {
   data.lastID = `${data.formID}-fld-0`
   const controls = new Controls(opts, d)
 
-//  const subtypes = (config.subtypes = h.processSubtypes(opts.subtypes))
   config.subtypes = h.processSubtypes(opts.subtypes)
 
   const $stage = $(d.stage)
@@ -240,10 +231,6 @@ const FormBuilder = function(opts, element, $) {
     }
 
     if (isNew) {
-      //const formID = data.lastID.match(/frmb-\d{13}/)[0]
-      //const instData = 
-      data.registerFormControl(controls, field)
-      //field.uid = instData.id
       const eventTimeout = setTimeout(() => {
         document.dispatchEvent(events.fieldAdded)
         clearTimeout(eventTimeout)
@@ -279,119 +266,6 @@ const FormBuilder = function(opts, element, $) {
   }
 
   /**
-   * Add data for field with options [select, checkbox-group, radio-group]
-   *
-   * @param  {Object} fieldData
-   * @return {String} field options markup
-   */
-  const fieldOptions = function(fieldData) {
-    const { type, values } = fieldData
-    let fieldValues
-    const optionActions = [m('a', mi18n.get('addOption'), { className: 'add add-opt' })]
-    const fieldOptions = [m('label', mi18n.get('selectOptions'), { className: 'false-label' })]
-    const isMultiple = fieldData.multiple || type === 'checkbox-group'
-    const optionDataTemplate = count => {
-      const label = mi18n.get('optionCount', count)
-      return {
-        selected: false,
-        label,
-        value: hyphenCase(label)
-      }
-    }
-
-    if (!values || !values.length) {
-      let defaultOptCount = [1, 2, 3]
-      if (['checkbox-group', 'checkbox'].includes(type)) {
-        defaultOptCount = [1]
-      }
-      fieldValues = defaultOptCount.map(optionDataTemplate)
-
-      const firstOption = fieldValues[0]
-      if (firstOption.hasOwnProperty('selected') && type !== 'radio-group') {
-        firstOption.selected = true
-      }
-    } else {
-      // ensure option data is has all required keys
-      fieldValues = values.map(option => Object.assign({}, { selected: false }, option))
-    }
-
-    const optionActionsWrap = m('div', optionActions, { className: 'option-actions' })
-    const options = m(
-      'ol',
-      fieldValues.map((option, index) => {
-        const optionData = config.opts.onAddOption(option, {type, index, isMultiple})
-        return selectFieldOptions(optionData, isMultiple)}),
-      {
-        className: 'sortable-options',
-      },
-    )
-    const optionsWrap = m('div', [options, optionActionsWrap], { className: 'sortable-options-wrap' })
-
-    fieldOptions.push(optionsWrap)
-
-    return m('div', fieldOptions, { className: 'form-group field-options' }).outerHTML
-  }
-
-  /* moved into controls
-  const defaultFieldAttrs = type => {
-    const defaultAttrs = ['required', 'label', 'description', 'placeholder', 'className', 'name', 'access', 'value']
-    const noValFields = ['header', 'paragraph', 'file', 'autocomplete'].concat(d.optionFields)
-
-    const valueField = !noValFields.includes(type)
-
-    const typeAttrsMap = {
-      autocomplete: defaultAttrs.concat(['options', 'requireValidOption']),
-      button: ['label', 'subtype', 'style', 'className', 'name', 'value', 'access'],
-      checkbox: [
-        'required',
-        'label',
-        'description',
-        'toggle',
-        'inline',
-        'className',
-        'name',
-        'access',
-        'other',
-        'options',
-      ],
-      text: defaultAttrs.concat(['subtype', 'maxlength']),
-      date: defaultAttrs,
-      file: defaultAttrs.concat(['subtype', 'multiple']),
-      header: ['label', 'subtype', 'className', 'access'],
-      hidden: ['name', 'value', 'access'],
-      paragraph: ['label', 'subtype', 'className', 'access'],
-      number: defaultAttrs.concat(['min', 'max', 'step']),
-      select: defaultAttrs.concat(['multiple', 'options']),
-      textarea: defaultAttrs.concat(['subtype', 'maxlength', 'rows']),
-    }
-
-    if (type in controls.registeredSubtypes && !(type in typeAttrsMap)) {
-      typeAttrsMap[type] = defaultAttrs.concat(['subtype'])
-    }
-
-    typeAttrsMap['checkbox-group'] = typeAttrsMap.checkbox
-    typeAttrsMap['radio-group'] = typeAttrsMap.checkbox
-
-    const typeAttrs = typeAttrsMap[type]
-
-    if (type === 'radio-group') {
-      removeFromArray('toggle', typeAttrs)
-    }
-
-    // Help Text / Description Field
-    if (['header', 'paragraph', 'button'].includes(type)) {
-      removeFromArray('description', typeAttrs)
-    }
-
-    if (!valueField) {
-      removeFromArray('value', typeAttrs)
-    }
-
-    return typeAttrs || defaultAttrs
-  }
-  */
-
-  /**
    * Build the editable properties for the field
    * @param  {object} values configuration object for advanced fields
    * @return {String}        markup for advanced fields
@@ -400,34 +274,9 @@ const FormBuilder = function(opts, element, $) {
     const { type } = values
     const controlClass = controls.getClass(type)
     const fieldAttrs = (controlClass.fieldTypes) ? controlClass.fieldTypes(type) : []
-    const context = { data: data, mi18n: mi18n, stage: $stage, opts: opts, controlClass: controlClass }
+    const context = { data: data, mi18n: mi18n, stage: $stage, opts: opts, helper: h, controls: controls, controlClass: controlClass }
 
     const advFields = []
-    const advFieldMap = {
-      required: () => new requiredBoolean(context, values).getDomDisplay(), 
-      toggle: () => new toggleBoolean(context, values).getDomDisplay(), 
-      inline: () => new inlineBoolean(context, values).getDomDisplay(),
-      label: () => new labelText(context, values).getDomDisplay(), 
-      description: () => new descriptionText(context, values).getDomDisplay(), 
-      subtype: () => new selectSubtype(context, values).getDomDisplay(), 
-      buttonStyle: () => new buttonStyleAttribute(context, values).getDomDisplay(), 
-      placeholder: () => new placeholderText(context, values).getDomDisplay(), 
-      rows: () => new numberAttribute(context, values).getDomDisplay(), 
-      className: isHidden => new classNameText(context, values).getDomDisplay(isHidden), 
-      name: isHidden => new nameText(context, values).getDomDisplay(isHidden), 
-      value: () => new valueText(context, values).getDomDisplay(), 
-      maxlength: () => new numberAttribute(context, values).getDomDisplay(),
-      mim: () => new numberAttribute(context, values).getDomDisplay(),
-      max: () => new numberAttribute(context, values).getDomDisplay(),
-      step: () => new numberAttribute(context, values).getDomDisplay(),
-      access: () => new accessAttribute(context, values).getDomDisplay(),
-      other: () => new otherBoolean(context, values).getDomDisplay(), 
-      options: () => fieldOptions(values),
-      requireValidOption: () => new requireValidOptionBoolean(context, values).getDomDisplay(),
-      contingentOnPreviousAnswer: () => 
-        controlClass.contingentOnPreviousAnswerField($stage, data, values, mi18n),
-      multiple: () => new multipleBoolean(context, values).getDomDisplay(), 
-    }
 
     const noDisable = ['name', 'className']
 
@@ -451,7 +300,8 @@ const FormBuilder = function(opts, element, $) {
       }
 
       if (useDefaultAttr.every(Boolean)) {
-        advFields.push(advFieldMap[attr](isDisabled))
+        const attrClass = controls.getAttributeClass(attr)
+        advFields.push(new attrClass(context, attr, values).getDomDisplay(isDisabled))
       }
     })
 
@@ -493,9 +343,9 @@ const FormBuilder = function(opts, element, $) {
       number: (attr, attrData) => {
         //numberAttribute,
         const values = {...attrData }
-        values.type = attr
-        const context = { data: data, mi18n: mi18n, stage: $stage, opts: opts, controlClass: null }
-        const attributeClass = new numberAttribute(context, values)
+        //values.type = attr
+        const context = { data: data, mi18n: mi18n, stage: $stage, opts: opts, helper: h, controls: controls, controlClass: null }
+        const attributeClass = new numberAttribute(context, attr, values)
         return attributeClass.getDomDisplay()
       },
       boolean: (attr, attrData) => {
@@ -507,9 +357,9 @@ const FormBuilder = function(opts, element, $) {
         } else if (attrData.hasOwnProperty('value') || attrData.hasOwnProperty('checked')) {
           isChecked = attrData.value || attrData.checked || false
         }
-        const context = { data: data, mi18n: mi18n, stage: $stage, opts: opts, controlClass: null }
-        const attributeClass = new booleanAttribute(context, attr, { ...attrData, [attr]: isChecked })
-        return attributeClass.getDomDisplayBase({ first: attrData.label }, false)
+        const context = { data: data, mi18n: mi18n, stage: $stage, opts: opts, helper: h, controls: controls, controlClass: null }
+        const attributeClass = new boolAttribute(context, attr, { ...attrData, [attr]: isChecked })
+        return attributeClass.getDomDisplayForBool({ first: attrData.label }, false)
         //return boolAttribute(attr, { ...attrData, [attr]: isChecked }, { first: attrData.label })
       },
     }
@@ -686,8 +536,7 @@ const FormBuilder = function(opts, element, $) {
     const field = m('li', liContents, {
       class: `${type}-field form-field`,
       type: type,
-      id: data.lastID,
-      //uid: values.uid
+      id: data.lastID
     })
     const $li = $(field)
 
@@ -717,48 +566,6 @@ const FormBuilder = function(opts, element, $) {
         field.scrollIntoView({ behavior: 'smooth' })
       }
     }
-  }
-
-  // Select field html, since there may be multiple
-  const selectFieldOptions = function(optionData, multipleSelect) {
-    const optionTemplate = { selected: false, label: '', value: '' }
-    const optionInputType = {
-      selected: multipleSelect ? 'checkbox' : 'radio',
-    }
-    const optionInputTypeMap = {
-      boolean: (value, prop) => {
-        const attrs = {value, type: optionInputType[prop] || 'checkbox'}
-        if (value) {
-          attrs.checked  = !!value
-        }
-        return['input', null, attrs]
-      },
-      number: value => ['input', null, {value, type: 'number'}],
-      string: (value, prop) => (['input', null, {value, type: 'text', placeholder: mi18n.get(`placeholder.${prop}`) || ''}]),
-      array: values => ['select', values.map(({label, value}) => m('option', label, {value}))],
-      object: ({tag, content, ...attrs}) => [tag, content, attrs],
-    }
-
-    optionData = {...optionTemplate, ...optionData}
-
-    const optionInputs = Object.entries(optionData).map(([prop, val]) => {
-      const optionInputDataType = getContentType(val)
-
-      const [tag, content, attrs] = optionInputTypeMap[optionInputDataType](val, prop)
-      const optionClassName = `option-${prop} option-attr`
-      attrs['data-attr'] = prop
-      attrs.className = attrs.className ? `${attrs.className} ${optionClassName}` : optionClassName
-
-      return m(tag, content, attrs)
-    })
-
-    const removeAttrs = {
-      className: `remove btn ${css_prefix_text}cancel`,
-      title: mi18n.get('removeMessage'),
-    }
-    optionInputs.push(m('a', null, removeAttrs))
-
-    return m('li', optionInputs).outerHTML
   }
 
   const cloneItem = function cloneItem(currentItem) {
@@ -791,7 +598,14 @@ const FormBuilder = function(opts, element, $) {
     return $clone
   }
 
+
+
+  
+
   // ---------------------- Event listeners ---------------------- //
+  $stage.on('never-happen', 'input', () => {
+    formBuilder.getFieldsAvailableForConditions()
+  })
 
   const saveAndUpdate = evt => {
     if (evt) {
@@ -819,8 +633,8 @@ const FormBuilder = function(opts, element, $) {
     const type = field.getAttribute('type')
     const $option = $(e.target.parentElement)
     e.preventDefault()
-    const options = field.querySelector('.sortable-options')
-    const optionsCount = options.childNodes.length
+    const options = $option.parent() //field.querySelector('.sortable-options')
+    const optionsCount = options.children().length //options.childNodes.length
     if (optionsCount <= 2 && !type.includes('checkbox')) {
       opts.notify.error('Error: ' + mi18n.get('minOptionMessage'))
     } else {
@@ -1063,7 +877,12 @@ const FormBuilder = function(opts, element, $) {
     const optionTemplate = { selected: false, label: '', value: '' }
     const $sortableOptions = $('.sortable-options', $optionWrap)
     const optionData = config.opts.onAddOption(optionTemplate, {type, index: $sortableOptions.children().length, isMultiple})
-    $sortableOptions.append(selectFieldOptions(optionData, isMultiple))
+
+    const controlClass = controls.getClass(type)
+    const context = { data: data, mi18n: mi18n, stage: $stage, opts: opts, helper: h, controls: controls, controlClass: controlClass }
+    const selectFieldOptions = new optionsAttribute(context, {}).selectFieldOptions(optionData, isMultiple)
+
+    $sortableOptions.append(selectFieldOptions)
   })
 
   $stage.on('mouseover mouseout', '.remove, .del-button', e => $(e.target).closest('li').toggleClass('delete'))

@@ -1,21 +1,19 @@
 import { markup } from '../../utils'
 import { styles } from '../../config'
+import baseAttributeClass from './baseAttributeClass'
 
 const m = markup
+const b = baseAttributeClass
 /**
  * styleAttribute creates DOM for editing style
  */
-export default class buttonStyleAttribute {
+export default class buttonStyleAttribute extends baseAttributeClass {
     /**
      * initialise the attribute
      */
-    constructor(context, values) {
-        this.data = context.data
-        this.mi18n = context.mi18n
-        this.name = 'style'
-        this.values = values
-        this.stage = context.stage
-        this.opts = context.opts
+    constructor(context, name, values) {
+        super(context, name, values)
+        this.name = 'style' //name doesn't match buttonStyle ??? - just how it was during refactoring
     }
 
     getDomDisplay(isHidden = false) {
@@ -56,15 +54,7 @@ export default class buttonStyleAttribute {
         })
     
         styleField += '</div>'
-    
-        const divAttrs = {
-            className: 'form-group style-wrap',
-        }
-        if (isHidden) {
-            divAttrs.style = 'display: none'
-        }
-
-        styleField = m('div', [styleLabel, styleField], divAttrs)
+        styleField = m('div', [styleLabel, styleField], b.getOuterStyleAttribs('style-wrap', isHidden))
     
         return styleField.outerHTML
     

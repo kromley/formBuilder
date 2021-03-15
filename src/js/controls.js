@@ -4,6 +4,7 @@ import controlCustom from './control/custom'
 import { unique, hyphenCase, markup as m } from './utils'
 import { empty } from './dom'
 import { css_prefix_text } from '../fonts/config.json'
+import indexOfAttributes from './control/controlAttributes/indexOfAttributes'
 
 /**
  * control parent class for creating control panel
@@ -26,10 +27,15 @@ export default class Controls {
     this.init()
   }
 
+  getAttributeClass(attr) {
+    return this.attrForControls[attr]
+  }
+
   /**
    * bootstrap controls and append them
    */
   init() {
+    this.attrForControls = indexOfAttributes.getPredefinedAttributes()
     this.setupControls()
     this.appendControls()
   }

@@ -1,10 +1,7 @@
 // CONTROL.JS
-import { camelCase, parsedHtml, markup, getStyles, getScripts, isCached, addEventListeners } from './utils'
-import events from './events'
+import { markup, camelCase, parsedHtml, getStyles, getScripts, isCached } from './utils'
 import mi18n from 'mi18n'
 
-const m = markup
-  
 /**
  * Base class for all control classes
  * Defines the structure of a control class and some standard control methods
@@ -73,21 +70,13 @@ export default class control {
     this.configure()
 
   }
-  static instanceData = field => {
-    //const nameHeaderLength = field.type.length + 1
-    //const id = field.name.substring(nameHeaderLength)
-    return {
-      name: field.name,
-      type: field.type, 
-      label: field.label
-    }
-  }
 
   static fieldTypes = () => {
-    const typeAttrs =  ['required', 'label', 'description', 'placeholder', 'className', 'name', 'access', 'contingentOnPreviousAnswer']
+    const typeAttrs =  ['required', 'label', 'description', 'placeholder', 'className', 'name', 'access', 'contingentOnCondition']
     return typeAttrs
   }
 
+  /*
   static contingentOnPreviousAnswerField = ($stage, data, values, mi18n) => {
     const dataForm = data.formData
     let fields = dataForm 
@@ -126,11 +115,7 @@ export default class control {
     availablePastSelector.push('<tr class="ui-sortable-handle">')
     availablePastSelector.push('<td class="contigent-condition-col option-label">')
     availablePastSelector.push(`<select name="${labelField}" id="pet-select">`)
-    /*
-    <option value="">--Please choose an option--</option>
-    <option value="dog">Dog</option>
-</select>`)
-*/
+
     for (const index in selectors) {
       const select = selectors[index]
       availablePastSelector.push(`<option value="${select.name}" name="option-${select.id}">${select.label}</option>`)
@@ -164,26 +149,6 @@ export default class control {
         }
       })
     }
-    /*
-      for (field in selectors) {
-        if (opts.roles.hasOwnProperty(key)) {
-          const roleId = `fld-${data.lastID}-roles-${key}`
-          const cbAttrs = {
-            type: 'checkbox',
-            name: 'roles[]',
-            value: key,
-            id: roleId,
-            className: 'roles-field',
-          }
-          if (roles.includes(key)) {
-            cbAttrs.checked = 'checked'
-          }
-
-          availableRoles.push(h.input(cbAttrs).outerHTML)
-          availableRoles.push(` ${opts.roles[key]}</label>`)
-        }
-      }
-      */
     
     //availablePastSelector.push('Hello World')
     //availablePastSelector.push('</div>')
@@ -251,7 +216,7 @@ export default class control {
       className: `form-group ${name}-wrap`,
     }).outerHTML
   }
-
+*/
 
   /**
    * Getter to retrieve class configuration.

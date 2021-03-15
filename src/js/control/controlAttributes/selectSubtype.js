@@ -1,23 +1,13 @@
 import { markup, capitalize, trimObj } from '../../utils'
 import { config } from '../../config'
+import baseAttributeClass from './baseAttributeClass'
 
 const m = markup
+const b = baseAttributeClass
 /**
  * selectSubtype creates DOM for editing selection of subtypes
  */
-export default class selectSubtype {
-    /**
-     * initialise the attribute
-     */
-    constructor(context, values) {
-        this.data = context.data
-        this.mi18n = context.mi18n
-        this.name = 'subtype'
-        this.values = values
-        this.stage = context.stage
-        this.opts = context.opts
-    }
-
+export default class selectSubtype extends baseAttributeClass {
     getDomDisplay(isHidden = false) {
         const data = this.data
         const attribute = this.name
@@ -52,13 +42,7 @@ export default class selectSubtype {
         const select = m('select', selectOptions, selectAttrs)
         const inputWrap = m('div', select, { className: 'input-wrap' })
 
-        const divAttrs = {
-            className: `form-group ${selectAttrs.name}-wrap`
-        }
-        if (isHidden) {
-            divAttrs.style = 'display: none'
-        }
-        const attrWrap = m('div', [label, inputWrap], divAttrs)
+        const attrWrap = m('div', [label, inputWrap],  b.getOuterStyleAttribs(selectAttrs.name+'-wrap', isHidden))
         return attrWrap.outerHTML
     }
 }

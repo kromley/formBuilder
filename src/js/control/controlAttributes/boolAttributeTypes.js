@@ -3,82 +3,50 @@ import boolAttribute from './boolAttribute'
 /*** Toggle Boolean */
  export class inlineBoolean extends boolAttribute {
 
-    constructor(context, values) {
-        super(context, 'inline', values)
-    }
-
     getDomDisplay(isHidden = false) {
         const { type } = this.values
         const labels = {
             first: this.mi18n.get('inline'),
             second: this.mi18n.get('inlineDesc', type.replace('-group', '')),
             }
-        return this.getDomDisplayBase(labels, isHidden)
+        return this.getDomDisplayForBool(labels, isHidden)
     }
  }
 
-/*** Required Field Boolean */
- export class requiredBoolean extends boolAttribute {
-
-    constructor(context, values) {
-        super(context, 'required', values)
-    }
- }
 
  /**
  * Require Valid Option Boolean 
  */
 export class requireValidOptionBoolean extends boolAttribute {
 
-    constructor(context, values) {
-        super(context, 'requireValidOption', values)
-    }
-
     getDomDisplay(isHidden = false) {
         const labels = {
             first: ' ',
             second: this.mi18n.get('requireValidOption'),
           }
-        return this.getDomDisplayBase(labels, isHidden)
+        return this.getDomDisplayForBool(labels, isHidden)
     }
 
 }
-
-/*** Toggle Boolean */
-export class toggleBoolean extends boolAttribute {
-
-    constructor(context, values) {
-        super(context, 'toggle', values)
-    }
- }
 
  /**
  * Other Boolean 
  */
 export class otherBoolean extends boolAttribute {
 
-    constructor(context, values) {
-        super(context, 'other', values)
-    }
-
     getDomDisplay(isHidden = false) {
         const labels = {
             first: this.mi18n.get('enableOther'),
             second: this.mi18n.get('enableOtherMsg'),
         }
-        return this.getDomDisplayBase(labels, isHidden)
+        return this.getDomDisplayForBool(labels, isHidden)
     }
-
 }
 
 /**
- * Other Boolean 
+ * multiple Boolean 
  */
  export class multipleBoolean extends boolAttribute {
-
-    constructor(context, values) {
-        super(context, 'multiple', values)
-    }
 
     getDomDisplay(isHidden = false) {
         const values = this.values
@@ -99,7 +67,7 @@ export class otherBoolean extends boolAttribute {
             }
         }
 
-        return this.getDomDisplayBase(labels, isHidden)
+        return this.getDomDisplayForBool(labels, isHidden)
     }
 
 }

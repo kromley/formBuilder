@@ -1,24 +1,13 @@
 import { markup, trimObj } from '../../utils'
+import baseAttributeClass from './baseAttributeClass'
 //import { config } from '../../config'
 
 const m = markup
+const b = baseAttributeClass
 /**
  * numberAttribute creates DOM for editing nubmers 
  */
-export default class numberAttribute {
-    /**
-     * initialise the attribute
-     */
-    constructor(context, values) {
-        const { type } = values
-        this.data = context.data
-        this.mi18n = context.mi18n
-        this.name = type
-        this.values = values
-        this.stage = context.stage
-        this.opts = context.opts
-    }
-
+export default class numberAttribute extends baseAttributeClass {
     getDomDisplay(isHidden = false) {
         const data = this.data
         const attribute = this.name
@@ -42,13 +31,7 @@ export default class numberAttribute {
         const inputWrap = `<div class="input-wrap">${numberAttribute}</div>`
         const inputLabel = `<label for="${inputConfig.id}">${attrLabel}</label>`
     
-        const divAttrs = {
-            className: `form-group ${attribute}-wrap`,
-        }
-        if (isHidden) {
-            divAttrs.style = 'display: none'
-        }
-
-        return m('div', [inputLabel, inputWrap], divAttrs).outerHTML
+        return m('div', [inputLabel, inputWrap], b.getOuterStyleAttribs(attribute+'-wrap', isHidden)).outerHTML
     }
 }
+

@@ -20,7 +20,7 @@ export default class controlText extends control {
   }
 
   static fieldTypes = type => {
-    let typeAttrs =  ['required', 'label', 'description', 'placeholder', 'className', 'name', 'access', 'contingentOnPreviousAnswer', 'value']
+    let typeAttrs =  ['required', 'label', 'description', 'placeholder', 'className', 'name', 'access', 'contingentOnCondition', 'value']
     if (type === 'file') {
       removeFromArray('value', typeAttrs)
     }

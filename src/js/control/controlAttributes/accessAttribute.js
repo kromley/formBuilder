@@ -9,8 +9,8 @@ export default class accessAttribute extends boolAttribute {
     /**
      * initialise the attribute
      */
-    constructor(context, values) {
-        super(context, 'access', values)
+    constructor(context, name, values) {
+        super(context, name, values)
         this.roles = values.role !== undefined ? values.role.split(',') : []
     }
 
@@ -49,6 +49,6 @@ export default class accessAttribute extends boolAttribute {
           content: availableRoles.join(''),
         }
 
-        return this.getDomDisplayBase(accessLabels, isHidden)
+        return this.getDomDisplayForBool(accessLabels, isHidden)
     }
 }

@@ -6,10 +6,6 @@ const m = markup
 /*** label text attribute */
  export class labelText extends textAttribute {
 
-    constructor(context, values) {
-        super(context, 'label', values)
-    }
-
     getDomDisplay(isHidden = false) {
         let attrVal = this.getAttrLabelBase()
         let attrLabel = this.getAttrLabelBase()
@@ -21,7 +17,7 @@ const m = markup
         else {
             attrVal = parsedHtml(attrVal)
         }
-        return this.getDomDisplayBase(isHidden, attrVal, attrLabel, this.getInnerAttrValueForLabel.bind(this))
+        return this.getDomDisplayForText(isHidden, attrVal, attrLabel, this.getInnerAttrValueForLabel.bind(this))
     }
 
     getInnerAttrValueForLabel(inputConfig, attrVal) {
@@ -33,39 +29,8 @@ const m = markup
     }
  }
 
-/*** description text attribute */
- export class descriptionText extends textAttribute {
-    constructor(context, values) {
-        super(context, 'description', values)
-    }
- }
-/*** placeholder text attribute */
-export class placeholderText extends textAttribute {
-    constructor(context, values) {
-        super(context, 'placeholder', values)
-    }
- }
-
- /*** name text attribute */
-export class nameText extends textAttribute {
-    constructor(context, values) {
-        super(context,  'name', values)
-    }
- }
-
- /*** className text attribute */
- export class classNameText extends textAttribute {
-    constructor(context, values) {
-        super(context,  'className', values)
-    }
- }
-
 /*** value test attribute */
 export class valueText extends textAttribute {
-
-    constructor(context, values) {
-        super(context,  'value', values)
-    }
 
     getDomDisplay(isHidden = false ) {
         const attrVal = this.getAttrValBase()
@@ -76,6 +41,6 @@ export class valueText extends textAttribute {
                 isHidden = true
         }
 
-        return this.getDomDisplayBase(isHidden, attrVal, attrLabel, this.getInnerAttrValueBase)
+        return this.getDomDisplayForText(isHidden, attrVal, attrLabel, this.getInnerAttrValueBase)
     }
  }

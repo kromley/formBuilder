@@ -7,7 +7,7 @@ import utils from '../utils'
 export default class controlParagraph extends control {
 
   static fieldTypes = () => {
-    const typeAttrs =  ['label', 'subtype', 'className', 'access', 'contingentOnPreviousAnswer']
+    const typeAttrs =  ['label', 'subtype', 'className', 'access', 'contingentOnCondition']
     return typeAttrs
   }
 

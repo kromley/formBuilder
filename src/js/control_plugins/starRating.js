@@ -22,10 +22,6 @@ window.fbControls.push(function(controlClass) {
       }
     }
 
-    static get definition2() {
-      return null
-    }
-
     static fieldTypes = () => {
       let typeAttrs =  super.fieldTypes()
       typeAttrs = typeAttrs.concat(['value'])

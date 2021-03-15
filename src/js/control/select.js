@@ -23,8 +23,8 @@ export default class controlSelect extends control {
     let typeAttrs =  super.fieldTypes()
 
     if (type === 'checkbox' || type === 'checkbox-group' || type === 'radio-group') {
-      typeAttrs = [ 'required', 'label', 'description', 'toggle', 'inline','className', 'name', 'access', 
-        'contingentOnPreviousAnswer', 'other', 'options', ]
+      typeAttrs = [ 'required', 'label', 'description', 'toggle', 'inline', 'className', 'name', 'access', 
+        'contingentOnCondition', 'other', 'options', ]
     }
     else if (type === 'select') {
       typeAttrs = typeAttrs.concat(['multiple', 'options'])
@@ -45,6 +45,19 @@ export default class controlSelect extends control {
     }
     return null
   }
+
+  static getDefaultNumberOfOptionsArray = type => {
+    return (type === 'checkbox-group' || type === 'checkbox') ? [1] : [1,2,3]
+  }
+
+  static defaultFirstOptionSelectValue = type => {
+    return (type === 'radio-group') ? false : true
+  }
+
+  static isFieldAvailableForConditions = () => {
+    return true
+  }
+
   /**
    * build a select DOM element, supporting other jquery text form-control's
    * @return {Object} DOM Element to be injected into the form.

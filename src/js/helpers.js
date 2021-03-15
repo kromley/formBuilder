@@ -199,7 +199,7 @@ export default class Helpers {
 
         if (!$field.hasClass('disabled-field')) {
           let fieldData = _this.getTypes($field)
-          fieldData.uid = $field.attr('uid')
+          //fieldData.name = $field.attr('name')
           const $roleInputs = $('.roles-field:checked', field)
           const roleVals = $roleInputs.map(index => $roleInputs[index].value).get()
 
@@ -1098,7 +1098,8 @@ export default class Helpers {
     ].concat(actionButtons)
 
     opts.fields = opts.fields.concat(replaceFields)
-    opts.disableFields = opts.disableFields.concat(replaceFields.map(({ type }) => type && type))
+    // not sure why this was needed, but seems to mess up list
+    //opts.disableFields = opts.disableFields.concat(replaceFields.map(({ type }) => type && type))
 
     if (opts.dataType === 'xml') {
       // html labels are not available using xml dataType
@@ -1133,4 +1134,5 @@ export default class Helpers {
 
     return data[type](formatted)
   }
+
 }
