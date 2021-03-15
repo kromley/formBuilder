@@ -7,7 +7,7 @@ const m = markup
  export class labelText extends textAttribute {
 
     getDomDisplay(isHidden = false) {
-        let attrVal = this.getAttrLabelBase()
+        let attrVal = this.getAttrValBase()
         let attrLabel = this.getAttrLabelBase()
 
         const textArea = ['paragraph']
