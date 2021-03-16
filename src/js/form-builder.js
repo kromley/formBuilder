@@ -20,7 +20,6 @@ import {
   markup,
   attrString,
   parsedHtml,
-  addEventListeners,
   closest,
   safename,
   forceNumber,

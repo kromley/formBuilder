@@ -14,6 +14,30 @@ export default class contingentOnCondition extends boolAttribute {
     contingentOnCondition.initializeEventListeners(context.stage, context.helper)
   }
 
+  static getDataFromFormGroup(fieldData) {
+    //const $formGroup = $(formGroup)
+    const fieldDataExtra = { contingentConditions: [], contingentConditionsJoinedBy: 'all' }
+
+    const $anyInput = $('#condition-choice-' + fieldData.name + '-opt-any')
+    if ($anyInput.attr('checked')) fieldDataExtra.contingentConditionsJoinedBy = 'any'
+
+    let index = 0
+    let $selectField = $('#condition-field-' + index + '-' + fieldData.name)
+    while ($selectField.length) {
+      const valueId = '#condition-field-value-' + index + '-' + fieldData.name
+      const $selectValue = $(valueId)
+     // const $selectOptions = $(valueId + ' option')
+     // const values = $.map($selectOptions, function(option) {
+     //   return { label: $(option).innerHTML, value: option.value }
+     // })
+      fieldDataExtra.contingentConditions.push({fieldName: $selectField.val(), matchValue: $selectValue.val() })
+      index++
+      $selectField = $('#condition-field-' + index + '-' + fieldData.name)
+    }
+
+    return fieldDataExtra
+  }
+
   static hasClassBeenInitialized = false;
   static helper
   static initializeEventListeners($stage, helperIn)
@@ -126,7 +150,7 @@ export default class contingentOnCondition extends boolAttribute {
     const conditions = [conditonHeader]
 
     for (let i=0; i < conditionsExt.length; i++) {
-      const conditionExt = conditionsExt[0]
+      const conditionExt = conditionsExt[i]
       const conditionLine = this.getConditionLine(conditionExt, i, conditionalFields)
       conditions.push(conditionLine)
     }
@@ -152,20 +176,20 @@ export default class contingentOnCondition extends boolAttribute {
       const fieldAttrs = {
         value: conditionalFields[i].name
       } 
-      if (i == condition.iFieldSelected) fieldAttrs.selected = 'true'
+      if (i == condition.fieldIndex) fieldAttrs.selected = 'true'
       fieldOptions.push(m('option', conditionalFields[i].label, fieldAttrs))
     }
     const select1 = m('select', fieldOptions, 
       { id: selectFieldName, name: selectFieldName, className: 'formControl cond-col-1', access: 'true', type: 'form-field' })
 
-    const valueOptions = contingentOnCondition.getOptionValues(condition.options, condition.iValueSelected)
+    const valueOptions = contingentOnCondition.getOptionValues(condition.options, condition.selectedOption)
     const select2 = m('select', valueOptions, 
     { id: selectFieldValueName, name: selectFieldValueName, className: 'formControl cond-col-2', access: 'true', type: 'field-value' })
 
     const removeLink = m('a', null, { className: ' rmove btn formbuilder-icon-cancel', title: mi18n.get('conditionRemoveTitle')})
 
     const conditionLineElem = [ select1, select2, removeLink]
-    const conditionLine = [m('li', conditionLineElem, { className: 'ui-sortable-handle' })]
+    const conditionLine = [m('li', conditionLineElem, { className: 'ui-sortable-handle condition-row' })]
     return conditionLine
   }
 
@@ -236,14 +260,14 @@ export default class contingentOnCondition extends boolAttribute {
 
     const radioGroupElems = [
       m('label', labelOption, { className: 'formbuilder-radio-group-label cond-col-3', for: groupName }),
-      this.getJoinByRadioGroupOption(groupName, 1, labelAnd, 'all'),
-      this.getJoinByRadioGroupOption(groupName, 2, labelOr, 'any'),
+      this.getJoinByRadioGroupOption(groupName, labelAnd, 'all'),
+      this.getJoinByRadioGroupOption(groupName, labelOr, 'any'),
     ]
     return m('div', radioGroupElems, { className: 'radio-group header-label', style: (showJoinOption) ? 'display:block' : 'display:none'}) //.outerHTML
   }
 
-  getJoinByRadioGroupOption(groupName, optionNum, optionLabel, optionValue) {
-    const radioId = groupName + '-opt' + optionNum 
+  getJoinByRadioGroupOption(groupName, optionLabel, optionValue) {
+    const radioId = groupName + '-opt-' + optionValue 
 
     const radioAttrs = {
       id: radioId,

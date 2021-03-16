@@ -14,11 +14,13 @@ import {
   unique,
   xmlAttrString,
   flattenArray,
+  closest,
 } from './utils'
 import events from './events'
 import { config } from './config'
 import control from './control'
 import controlCustom from './control/custom'
+import contingentOnConditionAttribute from './control/controlAttributes/contingentOnConditionAttribute'
 
 /**
  * Utilities specific to form-builder.js
@@ -199,11 +201,19 @@ export default class Helpers {
 
         if (!$field.hasClass('disabled-field')) {
           let fieldData = _this.getTypes($field)
-          //fieldData.name = $field.attr('name')
+          fieldData = Object.assign({}, fieldData, _this.getAttrVals(field))
+
+          // TODO: refactor so can look up controlClass to get the associated attributes and then get the attribute class to load its data
+          //   should do this for every attribute type registered for use with a field type
+          const $contingentCondtions = $('input.fld-contingentOnCondition:checked', field)
+          if ($contingentCondtions.length) {
+            const attrWrap = closest($field, '.contingentOnCondition-wrap')
+            const extraData = contingentOnConditionAttribute.getDataFromFormGroup(fieldData, attrWrap)
+            fieldData = Object.assign(fieldData, extraData)
+          }
+
           const $roleInputs = $('.roles-field:checked', field)
           const roleVals = $roleInputs.map(index => $roleInputs[index].value).get()
-
-          fieldData = Object.assign({}, fieldData, _this.getAttrVals(field))
 
           if (fieldData.subtype) {
             if (fieldData.subtype === 'quill') {
