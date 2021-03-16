@@ -13,7 +13,7 @@ const m = markup
     }
 
     static hasClassBeenInitialized = false;
-    static initializeEventListeners($stage)
+    static initializeEventListeners() //$stage)
     {
       if (this.hasClassBeenInitialized)
         return

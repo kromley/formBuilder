@@ -25,7 +25,6 @@ import {
   forceNumber,
 } from './utils'
 import { css_prefix_text } from '../fonts/config.json'
-import optionsAttribute from './control/controlAttributes/optionsAttribute'
 
 const DEFAULT_TIMEOUT = 333
 
@@ -845,31 +844,6 @@ const FormBuilder = function(opts, element, $) {
     })
   })
 
-  // Attach a callback to add new options
-  $stage.on('click', '.add-opt', function(e) {
-    e.preventDefault()
-    const type = $(e.target).closest('.form-field').attr('type')
-    const $optionWrap = $(e.target).closest('.field-options')
-    const $multiple = $('[name="multiple"]', $optionWrap)
-    const $firstOption = $('.option-selected:eq(0)', $optionWrap)
-    let isMultiple = false
-
-    if ($multiple.length) {
-      isMultiple = $multiple.prop('checked')
-    } else {
-      isMultiple = $firstOption.attr('type') === 'checkbox'
-    }
-
-    const optionTemplate = { selected: false, label: '', value: '' }
-    const $sortableOptions = $('.sortable-options', $optionWrap)
-    const optionData = config.opts.onAddOption(optionTemplate, {type, index: $sortableOptions.children().length, isMultiple})
-
-    const controlClass = controls.getClass(type)
-    const context = { data: data, mi18n: mi18n, stage: $stage, opts: opts, helper: h, controls: controls, controlClass: controlClass }
-    const selectFieldOptions = new optionsAttribute(context, {}).selectFieldOptions(optionData, isMultiple)
-
-    $sortableOptions.append(selectFieldOptions)
-  })
 
   $stage.on('mouseover mouseout', '.remove, .del-button', e => $(e.target).closest('li').toggleClass('delete'))
 

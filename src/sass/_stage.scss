@@ -534,7 +534,7 @@
       margin: 1px;
       padding-right: 28px;
 
-      &:nth-child(1) .remove {
+      &:nth-child(-n+2) .remove {
         display: none;
       }
 
@@ -561,19 +561,27 @@
     }
 
     .cond-col-1 {
-      width: calc(44.5% - 17px);
+      width: calc(40.5% - 17px);
       margin: 0 3px;
       float: none;
     }
     .cond-col-2 {
-      width: calc(44.5% - 17px);
+      width: calc(40.5% - 17px);
       margin: 0 3px;
       float: none;
     }
     .cond-col-3 {
-      width: calc(8.5% - 17px);
+      width: calc(16.5% - 17px);
       margin: 0 3px;
       float: none;
+    }
+
+    .formbuilder-radio-group-label {
+      display: inline;
+    }
+
+    .join-by-chk-label {
+      padding-left: 5px;
     }
 
   }

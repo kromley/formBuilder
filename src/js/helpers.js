@@ -207,7 +207,7 @@ export default class Helpers {
           //   should do this for every attribute type registered for use with a field type
           const $contingentCondtions = $('input.fld-contingentOnCondition:checked', field)
           if ($contingentCondtions.length) {
-            const attrWrap = closest($field, '.contingentOnCondition-wrap')
+            const attrWrap = $field.find('.contingentOnCondition-wrap').first()
             const extraData = contingentOnConditionAttribute.getDataFromFormGroup(fieldData, attrWrap)
             fieldData = Object.assign(fieldData, extraData)
           }
@@ -931,6 +931,7 @@ export default class Helpers {
       userEvents.onremove(field)
     }
 
+    events.fieldRemoved.field = field 
     document.dispatchEvent(events.fieldRemoved)
     return fieldRemoved
   }
