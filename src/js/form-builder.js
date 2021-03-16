@@ -360,7 +360,6 @@ const FormBuilder = function(opts, element, $) {
         const context = { data: data, mi18n: mi18n, stage: $stage, opts: opts, helper: h, controls: controls, controlClass: null }
         const attributeClass = new boolAttribute(context, attr, { ...attrData, [attr]: isChecked })
         return attributeClass.getDomDisplayForBool({ first: attrData.label }, false)
-        //return boolAttribute(attr, { ...attrData, [attr]: isChecked }, { first: attrData.label })
       },
     }
 
@@ -725,18 +724,6 @@ const FormBuilder = function(opts, element, $) {
     }
 
     h.save.call(h)
-  })
-
-  // update preview to label
-  addEventListeners(d.stage, 'keyup change', ({ target }) => {
-    if (!target.classList.contains('fld-label')) return
-    const value = target.value || target.innerHTML
-    const field =closest(target, '.form-field')
-    const label = field.querySelector('.field-label')
-    label.innerHTML = parsedHtml(value)
-    events.fieldLabelChanged.field = field
-    events.fieldLabelChanged.fldLabel = label
-    document.dispatchEvent(events.fieldLabelChanged)
   })
 
   // remove error styling when users tries to correct mistake
