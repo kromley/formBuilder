@@ -712,8 +712,10 @@ const FormBuilder = function(opts, element, $) {
       } else {
         prevOptions = document.getElementsByName(e.target.name)
         forEach(prevOptions, i => {
-          const selectedOption = options[i].parentElement.childNodes[0]
-          selectedOption.checked = prevOptions[i].checked
+          if (i < options.length) { //options might not be set for other yet
+            const selectedOption = options[i].parentElement.childNodes[0]
+            selectedOption.checked = prevOptions[i].checked
+            }
         })
       }
     } else {
