@@ -76,6 +76,7 @@ export default class control {
     const typeAttrs =  ['required', 'label', 'description', 'placeholder', 'className', 'name', 'access', 'contingentOnCondition']
     return typeAttrs
   }
+  static formData = null
   static eventListData = {}
 
   /**
@@ -331,6 +332,7 @@ export default class control {
           if (this.onRender) {
             this.onRender(evt)
           }
+          this.endRenderProcess()
         }
 
         // check for any css & javascript to include
@@ -357,20 +359,54 @@ export default class control {
     }
   } 
 
+  endRenderProcess = () => {
+    if (!this.config) return
+    if (this.config.contingentOnCondition && this.config.contingentConditionData) {
+      control.updateStageForCondition(this.element, this.id, this.config.contingentConditionData, this.preview)
+      return
+    }
+    if (!this.config.contingentOnCondition) {
+//      const idConditionalStateDisplay = '#' + this.id.slice(0, -1 * '-preview'.length) + '-condition'
+      const idConditionalStateDisplay = '#' + this.id + '-condition'
+      const $condDisplay = $(idConditionalStateDisplay) 
+      if ($condDisplay.length) {
+        $condDisplay.hide()
+      }
+    }
+  }
+
   handleFieldValueChanged = evt => {
     const fieldChangedName = (this.preview) ? evt.field.id.slice(0, -1 * '-preview'.length) : evt.field.id
     const condData = control.eventListData[this.id+'-renderedFieldValueChanged']
     if (contingentOnCondition.doesReferenceField(condData, fieldChangedName)) {
-      const isTrue = contingentOnCondition.evalCondition(condData, this.preview)
-      if (this.preview) {
-        const condState = isTrue ? 'shown' : 'hidden'
-        const idConditionalStateDisplay = '#' + this.id.slice(0, -1 * '-preview'.length) + '-condition'
-        const $condDisplay = $(idConditionalStateDisplay) 
-        $condDisplay.text(' { ' + condState + ' }')
-      }
-      //alert('in fieldValueChanged: ' + name + ' prev: ' + this.preview + ' evals to: ' + isTrue)
+      control.updateStageForCondition(this.element, this.id, condData, this.preview)
     }
   }
+
+  static updateStageForCondition(elem, id, condData, isPreview) {
+    const isTrue = contingentOnCondition.evalCondition(control.formData, condData, isPreview)
+    const $baseDisplay = $(elem)
+    if (!isPreview) {
+      const $formGroup = $baseDisplay.closest('.form-group')
+      return (isTrue) ? $formGroup.slideDown() : $formGroup.slideUp()
+    }
+    const condState = isTrue ? 'shown' : 'hidden'
+    const oldClass = (isTrue) ? 'hidden' : 'shown'
+    const idConditionalStateDisplay = id + '-condition'
+//    const idConditionalStateDisplay = id.slice(0, -1 * '-preview'.length) + '-condition'
+    let $condDisplay = $('#' + idConditionalStateDisplay) 
+    if (!$condDisplay.length) { //not in dom - must add first time
+      const displayElem = markup('span', ' t ', {
+        id: idConditionalStateDisplay,
+        className: 'formbuilder-conditional ' 
+      })
+      const $formField = $baseDisplay.closest('.form-field')
+      $formField.find('.tooltip-element:first').after(displayElem)
+      $condDisplay = $('#' + idConditionalStateDisplay) 
+    }
+    $condDisplay.text(' { ' + condState + ' }')
+    $condDisplay.removeClass(oldClass).addClass(condState).show()
+}
 
   /*
    * centralised error handling

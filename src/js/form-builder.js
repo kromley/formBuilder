@@ -11,7 +11,6 @@ import { defaultOptions, defaultI18n, config } from './config'
 import Controls from './controls'
 import boolAttribute from './control/controlAttributes/boolAttribute'
 import numberAttribute from './control/controlAttributes/numberAttribute'
-import contingentOnCondition from './control/controlAttributes/contingentOnConditionAttribute'
 import {
   subtract,
   hyphenCase,
@@ -26,6 +25,7 @@ import {
   forceNumber,
 } from './utils'
 import { css_prefix_text } from '../fonts/config.json'
+import control from './control'
 
 const DEFAULT_TIMEOUT = 333
 
@@ -245,6 +245,7 @@ const FormBuilder = function(opts, element, $) {
   // Parse saved XML template data
   const loadFields = function(formData) {
     formData = h.getData(formData)
+    control.formData = formData
     if (formData && formData.length) {
       formData.forEach(fieldData => prepFieldVars(trimObj(fieldData)))
       d.stage.classList.remove('empty')
@@ -507,15 +508,6 @@ const FormBuilder = function(opts, element, $) {
         style: values.required ? 'display:inline' : '',
       }),
     )
-    if (values.contingentOnCondition) {
-      const isTrue = contingentOnCondition.evalCondition(values.contingentConditionData, true)
-      const condState = isTrue ? 'shown' : 'hidden'
-      liContents.push(
-        m('span', ' { '+condState+' }', {id: values.name + '-condition',
-        className: 'formbuilder-conditional ' + condState
-      }),
-      )
-    }
 
     // add the help icon
     const descAttrs = {

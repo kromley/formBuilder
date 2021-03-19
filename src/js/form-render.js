@@ -188,6 +188,7 @@ class FormRender {
     // generate field markup if we have fields
     if (opts.formData) {
       // instantiate the layout class & loop through the field configuration
+      control.formData = opts.formData
       const engine = new opts.layout(opts.layoutTemplates)
       for (let i = 0; i < opts.formData.length; i++) {
         const fieldData = opts.formData[i]

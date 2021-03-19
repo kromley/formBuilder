@@ -3,6 +3,7 @@ import boolAttribute from './boolAttribute'
 import { addEventListeners } from '../../utils'
 import events from '../../events'
 import control from '../../control'
+import { Data } from '../../data'
 //import { config } from '../../config'
 
 const m = markup
@@ -214,11 +215,11 @@ export default class contingentOnCondition extends boolAttribute {
     return false
   }
 
-  static evalCondition(condition, fromPreview) {
+  static evalCondition(formData, condition, fromPreview) {
     const isAll = condition.joinedBy == 'all'
     for (let i=0; i < condition.expressions.length; i++) {
       const expression = condition.expressions[i]
-      const isExpressionTrue = contingentOnCondition.evaluateExpression(expression, fromPreview)
+      const isExpressionTrue = contingentOnCondition.evaluateExpression(formData, expression, fromPreview)
       if (isExpressionTrue) {
         if (!isAll) return true
       }
@@ -229,9 +230,9 @@ export default class contingentOnCondition extends boolAttribute {
     return isAll
   }
 
-  static evaluateExpression(expression, fromPreview) {
+  static evaluateExpression(formData, expression, fromPreview) {
     const name = expression.fieldName
-    const fieldData = contingentOnCondition.initialContext.data.getFieldData(name)
+    const fieldData = Data.getFieldData(formData, name)
     if (!fieldData) return false
     const controlClass = control.getClass(fieldData.type, fieldData.subtype)
     if (!controlClass.getControlValue) return false

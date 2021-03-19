@@ -481,6 +481,8 @@
 
   }
 
+
+
   /* --- Conditional area --- */
 
   .define-condition-wrap {
@@ -593,6 +595,13 @@
       width: 100%;
       clear: left;
       float: none;
+    }
+
+    .shown {
+      color: green
+    }
+    .hidden {
+      color: orange
     }
   }
 

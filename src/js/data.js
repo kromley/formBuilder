@@ -17,10 +17,10 @@ export class Data {
     instanceData[formID] = this
   }
 
-  getFieldData(name) {
-    if (!this.formData || Object.keys(this.formData).length == 0)
+  static getFieldData(formDataIn, name) {
+    if (!formDataIn || Object.keys(formDataIn).length == 0)
       return null
-    const formData = (typeof this.formData) == 'string' ? JSON.parse(this.formData) : this.formData
+    const formData = (typeof formDataIn) == 'string' ? JSON.parse(formDataIn) : formDataIn
     for (let i=0; i < formData.length; i++) {
       const field = formData[i]
       if (field.name == name) {
