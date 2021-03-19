@@ -34,6 +34,7 @@ const events = {
   fieldEditClosed: createNewEvent('fieldEditClosed'),
   fieldLabelChanged: createNewEvent('fieldLabelChanged'),
   fieldOptionListChanged: createNewEvent('fieldOptionListChanged'),
+  renderedFieldValueChanged: createNewEvent('renderedFieldValueChanged'),
 }
 
 export default events

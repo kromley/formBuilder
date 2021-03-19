@@ -2,6 +2,7 @@ import { markup } from '../../utils'
 import boolAttribute from './boolAttribute'
 import { addEventListeners } from '../../utils'
 import events from '../../events'
+import control from '../../control'
 //import { config } from '../../config'
 
 const m = markup
@@ -17,10 +18,10 @@ export default class contingentOnCondition extends boolAttribute {
 
   static getDataFromFormGroup(fieldData, $wrap) {
     //const $formGroup = $(formGroup)
-    const fieldDataExtra = { contingentConditions: [], contingentConditionsJoinedBy: 'all' }
+    const conditionData = { expressions: [], joinedBy: 'all' }
 
     const $checkedAnyInput = $('#condition-choice-' + fieldData.name + '-opt-any:checked')
-    fieldDataExtra.contingentConditionsJoinedBy = ($checkedAnyInput.length > 0) ? 'any' : 'all'
+    conditionData.joinedBy = ($checkedAnyInput.length > 0) ? 'any' : 'all'
 
     const $defineConditions = $wrap.find('.define-conditions')
     const maxItem = $defineConditions.attr('increment')
@@ -30,10 +31,14 @@ export default class contingentOnCondition extends boolAttribute {
         continue
       const valueId = '#condition-field-value-' + i + '-' + fieldData.name
       const $selectValue = $(valueId)
-      fieldDataExtra.contingentConditions.push({fieldName: $selectField.val(), matchValue: $selectValue.val() })
+      if ($selectValue.find('option').first().attr('value') == 'true') { //special case single checkbox
+        conditionData.expressions.push({fieldName: $selectField.val(), matchBoolean: $selectValue.val() })
+        continue
+      }
+      conditionData.expressions.push({fieldName: $selectField.val(), matchValue: $selectValue.val() })
     }
 
-    return fieldDataExtra
+    return { contingentConditionData: conditionData }
   }
 
   static hasClassBeenInitialized = false;
@@ -159,12 +164,12 @@ export default class contingentOnCondition extends boolAttribute {
       const fieldWithConditionData = h.getAttrVals($fieldWithCondition[0])
       const indexFieldWithCondition = contingentOnCondition.findFieldIndexByName(fieldWithConditionData.name, formData)
       let indexSelectedOption = -1
-      const conditions = formData[indexFieldWithCondition].contingentConditions
-      if (conditions) {
-        for (let i=0; i<conditions.length; i++) {
-          const condition = conditions[i]
-          if (condition.fieldName == fieldSelected) {
-            indexSelectedOption = contingentOnCondition.findOptionIndexByValue(condition.matchValue, formData[indexField].values)
+      const expressions = formData[indexFieldWithCondition].contingentConditionData.expressions
+      if (expressions) {
+        for (let i=0; i<expressions.length; i++) {
+          const expression = expressions[i]
+          if (expression.fieldName == fieldSelected) {
+            indexSelectedOption = contingentOnCondition.findOptionIndexByValue(expression.matchValue, formData[indexField].values)
             break
           }
         }
@@ -176,7 +181,7 @@ export default class contingentOnCondition extends boolAttribute {
   }
 
   static handleFieldRemoved(e) {
-    const h = contingentOnCondition.helper
+    const h = contingentOnCondition.initialContext.helper
     const fieldRemoved = e.field
     const fieldData = h.getAttrVals(fieldRemoved)
     //const fieldType = $(fieldRemoved).attr('type')
@@ -199,6 +204,47 @@ export default class contingentOnCondition extends boolAttribute {
       $(option).remove()
     })
   }
+
+  static doesReferenceField(condition, fieldName) {
+    for (let i=0; i < condition.expressions.length; i++) {
+      const expression = condition.expressions[i]
+      if ( expression.fieldName == fieldName)
+        return true
+    }
+    return false
+  }
+
+  static evalCondition(condition, fromPreview) {
+    const isAll = condition.joinedBy == 'all'
+    for (let i=0; i < condition.expressions.length; i++) {
+      const expression = condition.expressions[i]
+      const isExpressionTrue = contingentOnCondition.evaluateExpression(expression, fromPreview)
+      if (isExpressionTrue) {
+        if (!isAll) return true
+      }
+      else {
+        if (isAll) return false
+      }
+    }
+    return isAll
+  }
+
+  static evaluateExpression(expression, fromPreview) {
+    const name = expression.fieldName
+    const fieldData = contingentOnCondition.initialContext.data.getFieldData(name)
+    if (!fieldData) return false
+    const controlClass = control.getClass(fieldData.type, fieldData.subtype)
+    if (!controlClass.getControlValue) return false
+    const fieldValue = controlClass.getControlValue(fieldData, fromPreview)
+    if (Array.isArray(fieldValue)) {
+      return fieldValue.includes(expression.matchValue)
+    }
+    if (expression.hasOwnProperty('matchBoolean')) {
+      return (expression.matchBoolean == fieldValue)
+    }
+    return fieldValue == expression.matchValue
+  }
+
 
   getDomDisplay(isHidden = false) {
       const data = this.data
@@ -230,17 +276,19 @@ export default class contingentOnCondition extends boolAttribute {
     const values = this.values
     const mi18n = this.mi18n
 
-    if (!values.contingentConditions) {
+    if (!values.contingentConditionData) {
       const fieldForCondition = conditionalFields[0]
-      const firstCondition = {
+      const firstExpression = {
          fieldName: fieldForCondition.name,
          matchValue: fieldForCondition.values[0].value
       }
-      values.contingentConditions = [ firstCondition ]
-      values.contingentConditionsJoinedBy = 'all'
+      values.contingentConditionData = {
+        expressions: [ firstExpression ],
+        joinedBy: 'all'
+      }
     }
-    const contigentCondition = values.contingentConditions
-    const conditionsExt = this.fillOutConditionsDataBasedOnFields(contigentCondition, conditionalFields)
+    const expressions = values.contingentConditionData.expressions
+    const conditionsExt = this.fillOutConditionsDataBasedOnFields(expressions, conditionalFields)
 
     const labelField = mi18n.get('conditionFieldLabel')
     const labelValue = mi18n.get('conditionValueLabel')
@@ -252,7 +300,7 @@ export default class contingentOnCondition extends boolAttribute {
     const conditonHeaderElems = [
       m('span', labelField, { class: 'header-label cond-col-1', type: 'form-field' } ), 
       m('span', labelValue, { class: 'header-label cond-col-2', type: 'field-value' } ),
-      this.getJoinByRadioGroup(contigentCondition.length > 1),
+      this.getJoinByRadioGroup(expressions.length > 1),
     ] 
     const conditonHeader = [m('li', conditonHeaderElems, { className: 'ui-sortable-handle header' })]
     const conditions = [conditonHeader]
@@ -308,12 +356,12 @@ export default class contingentOnCondition extends boolAttribute {
     const valueOptions = []
     if (options.length == 1) { //special case for one checkbox
       const boolValueAttrs = {
-        value: options[0].value + '-true'
+        value: 'true'
       }
       if (0 == iValueSelected) boolValueAttrs.selected = 'true'
       valueOptions.push(m('option', options[0].label + ' - true', boolValueAttrs))
 
-      boolValueAttrs.value = options[0].value + '-false'
+      boolValueAttrs.value = 'false'
       if (1 == iValueSelected) boolValueAttrs.selected = 'true'
       valueOptions.push(m('option', options[0].label+ ' - false', boolValueAttrs))
       return valueOptions
@@ -329,18 +377,18 @@ export default class contingentOnCondition extends boolAttribute {
     return valueOptions
   }
 
-  fillOutConditionsDataBasedOnFields(conditions, conditionalFields) {
+  fillOutConditionsDataBasedOnFields(expressions, conditionalFields) {
     const listConditionsExt = []
 
-    for (let i=0; i < conditions.length; i++) {
-      const condition = conditions[i]
-      let iFieldSelected = contingentOnCondition.findFieldIndexByName(condition.fieldName, conditionalFields)
+    for (let i=0; i < expressions.length; i++) {
+      const expression = expressions[i]
+      let iFieldSelected = contingentOnCondition.findFieldIndexByName(expression.fieldName, conditionalFields)
       let iValueSelected = 0
       if (iFieldSelected < 0) { //possibly deleted after creation
         iFieldSelected = 0
       }
       else {
-        iValueSelected = contingentOnCondition.findOptionIndexByValue(condition.matchValue, conditionalFields[iFieldSelected].values)
+        iValueSelected = contingentOnCondition.findOptionIndexByValue(expression.matchValue, conditionalFields[iFieldSelected].values)
       }
       const conditionExt = { 
         fieldIndex: iFieldSelected, 
@@ -401,7 +449,7 @@ export default class contingentOnCondition extends boolAttribute {
     const values = this.values
     const radioId = groupName + '-opt-' + optionValue 
 
-    const isSelected = (values.contingentConditionsJoinedBy == optionValue)
+    const isSelected = (values.contingentConditionData.joinedBy == optionValue)
 
     const radioAttrs = {
       id: radioId,

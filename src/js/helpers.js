@@ -14,13 +14,14 @@ import {
   unique,
   xmlAttrString,
   flattenArray,
-  closest,
+ // closest,
 } from './utils'
 import events from './events'
 import { config } from './config'
 import control from './control'
 import controlCustom from './control/custom'
 import contingentOnConditionAttribute from './control/controlAttributes/contingentOnConditionAttribute'
+import contingentOnCondition from './control/controlAttributes/contingentOnConditionAttribute'
 
 /**
  * Utilities specific to form-builder.js
@@ -274,7 +275,7 @@ export default class Helpers {
       formData = config.opts.formData
     }
 
-    if (!formData) {
+    if (!formData || formData == 'undefined') {
       return false
     }
 
@@ -386,12 +387,22 @@ export default class Helpers {
         previewData.values.push(option)
       })
     }
+    if (previewData.contingentOnCondition) {
+      const contingentData = contingentOnCondition.getDataFromFormGroup(previewData, $field)
+      previewData = Object.assign(previewData, contingentData)
+    }
 
     previewData = trimObj(previewData, true)
 
     previewData.className = _this.classNames(field, previewData)
 
-    $field.data('fieldData', previewData)
+   // const fieldDataInit = $field.data('fieldData') 
+   // if (fieldDataInit && fieldDataInit.attrs && fieldDataInit.attrs.contingentOnCondition &&
+   //   fieldDataInit.attrs.contingentConditionData) {
+   //   previewData.contingentConditionData = fieldDataInit.attrs.contingentConditionData
+    //}
+
+    //$field.data('fieldData', previewData)
 
     // determine the control class for this type, and then process it through the layout engine
     const custom = controlCustom.lookup(previewData.type)

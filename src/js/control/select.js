@@ -1,5 +1,6 @@
 import control from '../control'
 import { trimObj, removeFromArray } from '../utils'
+import events from '../events'
 
 /**
  * Text input class
@@ -56,6 +57,36 @@ export default class controlSelect extends control {
 
   static isFieldAvailableForConditions = () => {
     return true
+  }
+
+  static getControlValue(fieldData, fromPreview) {
+    let type = fieldData.type
+    if (type == 'checkbox-group') {
+      if (fieldData.values.length == 1) {
+        type = 'checkbox'
+      }
+    }
+    const idFieldBase = (fromPreview) ? fieldData.name + '-preview' : fieldData.name
+    if (type === 'select') {
+      return $('#' + idFieldBase).val()
+    }
+    if (type == 'radio-group') {
+      const $radioGroup = $('#' + idFieldBase + '-0').closest('.radio-group')
+      return $radioGroup.find('input[name=\'' + idFieldBase + '\']:checked').val()
+    }
+    if (type == 'checkbox-group') {
+      const returnVals = new Array()
+      const $checkboxGroup = $('#' + idFieldBase + '-0').closest('.checkbox-group')
+      const filter = 'input[name=\'' + idFieldBase + '[]\']:checked'
+      $.each($checkboxGroup.find(filter), function() {
+        returnVals.push($(this).val())
+      })
+      return returnVals
+    }
+    if (type == 'checkbox') {
+      return $('#' + idFieldBase + '-0').is(':checked') ? 'true' : 'false'
+    }
+    alert('Unknown type: ' + type + ' getting value for field: ' + fieldData.name)
   }
 
   /**
@@ -214,6 +245,19 @@ export default class controlSelect extends control {
       checkboxes[i].addEventListener('change', toggleValid)
     }
     toggleValid()
+    this.initToPublishEventWhenChanged()
+  }
+
+  initToPublishEventWhenChanged = () => {
+    const $inputFields = (this.config.type == 'select') ? $(this.element) :
+      $(this.element).find('input') //select sent directly in
+    const publishFieldChange = () => {
+      events.renderedFieldValueChanged.field = this
+      document.dispatchEvent(events.renderedFieldValueChanged)
+    }
+    $.each($inputFields, function() {
+      $(this).on('change', publishFieldChange.bind(this))
+    })
   }
 
   /**
@@ -259,6 +303,7 @@ export default class controlSelect extends control {
         })
       }
     }
+    this.initToPublishEventWhenChanged()
   }
 }
 

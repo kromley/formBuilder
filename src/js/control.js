@@ -1,6 +1,7 @@
 // CONTROL.JS
 import { markup, camelCase, parsedHtml, getStyles, getScripts, isCached } from './utils'
 import mi18n from 'mi18n'
+import contingentOnCondition from './control/controlAttributes/contingentOnConditionAttribute'
 
 /**
  * Base class for all control classes
@@ -75,148 +76,7 @@ export default class control {
     const typeAttrs =  ['required', 'label', 'description', 'placeholder', 'className', 'name', 'access', 'contingentOnCondition']
     return typeAttrs
   }
-
-  /*
-  static contingentOnPreviousAnswerField = ($stage, data, values, mi18n) => {
-    const dataForm = data.formData
-    let fields = dataForm 
-    if (!Array.isArray(fields)) {
-      fields = (dataForm) ? JSON.parse(dataForm) : []
-    }
-
-    const selectors = []
-    for (let i = 0; i < fields.length; i++) {
-      const field = fields[i]
-      if (field.type == 'select' || field.type == 'radio-group' || field.type == 'checkbox-group') {
-        selectors.push(field)
-      }
-    }
-
-    if (selectors.length == 0)
-      return ''
-
-    const labelField = mi18n.get('conditionFieldLabel')
-    const labelValue = mi18n.get('conditionValueLabel')
-    const labelConditionOperator = mi18n.get('conditionOperatorAnd')
-
-    const pastSelectorDisplay = values.contingentOnPreviousAnswer ? 'style="display:block"' : ''
-    const availablePastSelector = [`<div class="available-condition-selectors" ${pastSelectorDisplay}>`]
-    availablePastSelector.push('<div class="sortable-options-wrap" style="width:98%">')
-    availablePastSelector.push('<table class="sortable-options ui-sortable"><thead class="condition-thead">')
-
-    //header
-    availablePastSelector.push('<tr class="ui-sortable-handle">')
-    availablePastSelector.push(`<th class="contigent-condition-col field-label">${labelField}</th>`)
-    availablePastSelector.push(`<th class="contigent-condition-col field-label">${labelValue}</th>`)
-    availablePastSelector.push('<th class="contigent-condition-col-last field-label">&nbsp;</th>')
-    availablePastSelector.push('</tr></thead><tbody class="condition-tbody">')
-
-    //conditions
-    availablePastSelector.push('<tr class="ui-sortable-handle">')
-    availablePastSelector.push('<td class="contigent-condition-col option-label">')
-    availablePastSelector.push(`<select name="${labelField}" id="pet-select">`)
-
-    for (const index in selectors) {
-      const select = selectors[index]
-      availablePastSelector.push(`<option value="${select.name}" name="option-${select.id}">${select.label}</option>`)
-    }
-    availablePastSelector.push('</select>')
-    availablePastSelector.push('</td>')
-    
-
-    availablePastSelector.push(`<td class="contigent-condition-col option-label">${labelValue}</td>`)
-    availablePastSelector.push(`<td class="contigent-condition-col-last option-label">
-      <a class="joinOperator add-opt">${labelConditionOperator}</a></td>`)
-    availablePastSelector.push('</tr>')
-
-    if (!$stage.fieldLevelChange) {
-      addEventListeners(document, events.fieldLabelChanged.type, e => {
-        const fieldChanged = e.field
-        const fieldLabel = e.fldLabel
-        const selector = 'option[name=\'option-'+fieldChanged.id+'\']'
-        const optionHtml = $(selector)
-        if (optionHtml) {
-          const newVal = fieldLabel.innerHTML
-          const options = $(selector).toArray()
-          for (const index in options) {
-            const option = options[index]
-            option.innerHTML = newVal
-          }
-
-          //forEach(optionHtml, index => {
-          //  optionHtml[index].innerHTML = newVal
-          //})
-        }
-      })
-    }
-    
-    //availablePastSelector.push('Hello World')
-    //availablePastSelector.push('</div>')
-
-    availablePastSelector.push('</tbody></table>')
-    availablePastSelector.push('<div class="option-actions">')
-    availablePastSelector.push(`<a class="add add-opt">${mi18n.get('addCondition')}</a>`)
-    availablePastSelector.push('</div>')
-    availablePastSelector.push('</div>')
-
-    const displayInDom = this.boolAttribute(data, 'contingentOnPreviousAnswer', values, {
-      first: mi18n.get('contingentLabel'),
-      second: mi18n.get('contingentOnPreviousAnswer'),
-      content: availablePastSelector.join('')
-    })
-
-    //add processing
-    if (!('contingentHandling' in $stage)) {
-      $stage.contingentHandling = true
-      $stage.on('click', 'input.fld-contingentOnPreviousAnswer', function(e) {
-        const selectorsInDom = $(e.target).closest('.form-field').find('.available-condition-selectors')
-        const enableConditionalInclude= $(e.target)
-        selectorsInDom.slideToggle(250, function() {
-          if (!enableConditionalInclude.is(':checked')) {
-            $('input[type=checkbox]', selectorsInDom).removeAttr('checked')
-          }
-        })
-      })
-    }
-
-    return displayInDom
-  }
-
-  static boolAttribute = (data, name, values, labels = {}) => {
-    const label = txt =>
-      m('label', txt, {
-        for: `${name}-${data.lastID}`,
-      }).outerHTML
-    const cbAttrs = {
-      type: 'checkbox',
-      className: `fld-${name}`,
-      name,
-      id: `${name}-${data.lastID}`,
-    }
-    if (values[name]) {
-      cbAttrs.checked = true
-    }
-    const left = []
-    let right = [m('input', null, cbAttrs).outerHTML]
-
-    if (labels.first) {
-      left.push(label(labels.first))
-    }
-
-    if (labels.second) {
-      right.push(' ', label(labels.second))
-    }
-    if (labels.content) {
-      right.push(labels.content)
-    }
-
-    right = m('div', right, { className: 'input-wrap' }).outerHTML
-
-    return m('div', left.concat(right), {
-      className: `form-group ${name}-wrap`,
-    }).outerHTML
-  }
-*/
+  static eventListData = {}
 
   /**
    * Getter to retrieve class configuration.
@@ -438,7 +298,7 @@ export default class control {
    *   - hidden - this control shouldn't render anything visible to the page
    * @return {Object} DOM Element to be injected into the form, or an object/hash of configuration as above
    */
-  build() {
+  buildBase() {
     const { label, type, ...data } = this.config
     return this.markup(type, parsedHtml(label), data)
   }
@@ -455,7 +315,10 @@ export default class control {
       /**
        * @param {Node} element
        */
-      prerender: element => element,
+      prerender: element => {
+        this.element = element
+         //this.basePreRender(element)
+      },
 
       /**
        * onRender event to execute code each time an instance of this control is injected into the DOM
@@ -464,6 +327,7 @@ export default class control {
       render: evt => {
         // check for a class render event - default to an empty function
         const onRender = () => {
+          this.beginRenderProcess()
           if (this.onRender) {
             this.onRender(evt)
           }
@@ -483,7 +347,32 @@ export default class control {
     return eventType ? events[eventType] : events
   }
 
-  /**
+  beginRenderProcess = () => {
+    if (this.config && this.config.contingentOnCondition && this.config.contingentConditionData) {
+      const pastCondition = control.eventListData[this.id+'-renderedFieldValueChanged']
+      if (!pastCondition) {
+        document.addEventListener('renderedFieldValueChanged', this.handleFieldValueChanged)
+      }
+      control.eventListData[this.id+'-renderedFieldValueChanged'] = this.config.contingentConditionData
+    }
+  } 
+
+  handleFieldValueChanged = evt => {
+    const fieldChangedName = (this.preview) ? evt.field.id.slice(0, -1 * '-preview'.length) : evt.field.id
+    const condData = control.eventListData[this.id+'-renderedFieldValueChanged']
+    if (contingentOnCondition.doesReferenceField(condData, fieldChangedName)) {
+      const isTrue = contingentOnCondition.evalCondition(condData, this.preview)
+      if (this.preview) {
+        const condState = isTrue ? 'shown' : 'hidden'
+        const idConditionalStateDisplay = '#' + this.id.slice(0, -1 * '-preview'.length) + '-condition'
+        const $condDisplay = $(idConditionalStateDisplay) 
+        $condDisplay.text(' { ' + condState + ' }')
+      }
+      //alert('in fieldValueChanged: ' + name + ' prev: ' + this.preview + ' evals to: ' + isTrue)
+    }
+  }
+
+  /*
    * centralised error handling
    * @param {String} message message to output to the console
    */

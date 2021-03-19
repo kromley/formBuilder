@@ -11,6 +11,7 @@ import { defaultOptions, defaultI18n, config } from './config'
 import Controls from './controls'
 import boolAttribute from './control/controlAttributes/boolAttribute'
 import numberAttribute from './control/controlAttributes/numberAttribute'
+import contingentOnCondition from './control/controlAttributes/contingentOnConditionAttribute'
 import {
   subtract,
   hyphenCase,
@@ -506,6 +507,15 @@ const FormBuilder = function(opts, element, $) {
         style: values.required ? 'display:inline' : '',
       }),
     )
+    if (values.contingentOnCondition) {
+      const isTrue = contingentOnCondition.evalCondition(values.contingentConditionData, true)
+      const condState = isTrue ? 'shown' : 'hidden'
+      liContents.push(
+        m('span', ' { '+condState+' }', {id: values.name + '-condition',
+        className: 'formbuilder-conditional ' + condState
+      }),
+      )
+    }
 
     // add the help icon
     const descAttrs = {
@@ -537,7 +547,7 @@ const FormBuilder = function(opts, element, $) {
     })
     const $li = $(field)
 
-    $li.data('fieldData', { attrs: values })
+   // $li.data('fieldData', { attrs: values })
 
     if (typeof h.stopIndex !== 'undefined') {
       $('> li', d.stage).eq(h.stopIndex).before($li)

@@ -141,6 +141,9 @@ export default class layout {
     if (this.data.required) {
       labelContents.push(this.markup('span', '*', { className: 'formbuilder-required' }))
     }
+    if (this.data.contingentOnCondition) {
+      labelContents.push(this.markup('span', '{hidden}', {id: this.data.id + '-condition', className: 'formbuilder-conditional'}))
+    }
 
     // support an override template for labels
     if (this.isTemplate('label')) {
